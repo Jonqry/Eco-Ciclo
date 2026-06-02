@@ -1,10 +1,10 @@
 package com.ecociclo.api.repository;
 
-import com.ecociclo.api.model.WasteItem;
+import com.ecociclo.api.model.Scheduling;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface WasteItemRepository extends JpaRepository<WasteItem, Long> {
-
+public interface SchedulingRepository extends JpaRepository<Scheduling, Long> {
+    
 }

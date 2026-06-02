@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.ecociclo.api.dto.UserResponseDTO; 
+import com.ecociclo.api.dto.UserResponseDTO;
 import com.ecociclo.api.model.User;
 import com.ecociclo.api.repository.UserRepository;
 
@@ -24,7 +24,7 @@ public class UserService {
         return new UserResponseDTO(salvo);
     }
 
-   public List<UserResponseDTO> listarTodos() {
+    public List<UserResponseDTO> listarTodos() {
     return repository.findAll().stream()
             .map(UserResponseDTO::new)
             .toList();
@@ -59,7 +59,7 @@ public class UserService {
         if (user.getUltimaAtividade() == null || user.getUltimaAtividade().plusDays(1).equals(hoje)) {
             user.setStreak(user.getStreak() + 1);
         } else if (user.getUltimaAtividade().isBefore(hoje.minusDays(1))) {
-            user.setStreak(1); 
+            user.setStreak(1);
         }
         
         user.setUltimaAtividade(hoje);
