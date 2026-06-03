@@ -1,15 +1,16 @@
 'use client';
 
 import { useState } from 'react';
+import { Calendar, MapPin, Recycle, Clock, AlertCircle, CheckCircle2 } from 'lucide-react';
 
 export default function FormAgendamento({ onAgendamentoSucesso }) {
-
+  
   const user = { id: 1, nome: "João Victor" };
 
   const [wasteId, setWasteId] = useState('');
   const [dataHora, setDataHora] = useState('');
   const [enderecoColeta, setEnderecoColeta] = useState('');
-
+  
   const [erro, setErro] = useState('');
   const [sucesso, setSucesso] = useState('');
   const [carregando, setCarregando] = useState(false);
@@ -19,13 +20,13 @@ export default function FormAgendamento({ onAgendamentoSucesso }) {
     setErro('');
     setSucesso('');
 
-    if (!wasteId) return setErro('Por favor, selecione o tipo de resíduo.');
-    if (!dataHora) return setErro('Por favor, escolha a data e a hora da recolha.');
-    if (!enderecoColeta.trim()) return setErro('Por favor, insira o endereço de recolha.');
+    if (!wasteId || !dataHora || !enderecoColeta.trim()) {
+      return setErro('Por favor, preencha todos os campos obrigatórios.');
+    }
 
     const dataSelecionada = new Date(dataHora);
     if (dataSelecionada < new Date()) {
-    return setErro('A data e hora do agendamento não podem ser no passado.');
+      return setErro('Não é possível agendar uma coleta no passado.');
     }
 
     setCarregando(true);
@@ -45,7 +46,7 @@ export default function FormAgendamento({ onAgendamentoSucesso }) {
       });
 
       if (response.ok) {
-        setSucesso('Recolha agendada com sucesso!');
+        setSucesso('Coleta agendada com sucesso!');
         
         setWasteId('');
         setDataHora('');
@@ -55,65 +56,88 @@ export default function FormAgendamento({ onAgendamentoSucesso }) {
           onAgendamentoSucesso();
         }
       } else {
-        setErro('Erro ao realizar o agendamento. Verifique os dados fornecidos.');
+        setErro('Ocorreu um erro. Verifique os dados e tente novamente.');
       }
     } catch (err) {
-      setErro('Não foi possível conectar com o servidor backend.');
+      setErro('Falha na comunicação com o servidor backend.');
     } finally {
       setCarregando(false);
     }
   };
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow-md border border-gray-100">
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">Agendar Nova Recolha</h2>
+    <div className="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-100 h-full">
+      <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-slate-800">
+        <Calendar className="w-5 h-5 text-emerald-500" />
+        Nova Solicitação
+      </h2>
       
-      <form onSubmit={handleAgendar} className="space-y-4">
+      <form onSubmit={handleAgendar} className="space-y-5">
         
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1">O que vai reciclar?</label>
+        <div className="space-y-2">
+          <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+            <Recycle className="w-4 h-4 text-slate-400" />
+            Tipo de Resíduo
+          </label>
           <select 
-            value={wasteId} 
+            value={wasteId}
             onChange={(e) => setWasteId(e.target.value)}
-            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 bg-white"
+            className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none text-slate-700"
           >
-            <option value="">Selecione um item do seu inventário...</option>
+            <option value="" disabled>Selecione um item do inventário...</option>
             <option value="1">Óleo de Cozinha Usado</option>
             <option value="2">Baterias Velhas</option>
-            <option value="3">Resíduos Eletrónicos</option>
+            <option value="3">Resíduos Eletrônicos</option>
           </select>
         </div>
 
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1">Data e Hora da Recolha</label>
-          <input 
-            type="datetime-local" 
+        <div className="space-y-2">
+          <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+            <Clock className="w-4 h-4 text-slate-400" />
+            Data e Horário
+          </label>
+          <input
+            type="datetime-local"
             value={dataHora}
             onChange={(e) => setDataHora(e.target.value)}
-            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"
+            className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none text-slate-700"
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1">Endereço de Recolha</label>
-          <input 
-            type="text" 
-            placeholder="Ex: Rua da Aurora, 123 - Recife"
+        <div className="space-y-2">
+          <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+            <MapPin className="w-4 h-4 text-slate-400" />
+            Endereço de Coleta
+          </label>
+          <input
+            type="text"
+            placeholder="Ex: Av. Governador Agamenon Magalhães, Recife"
             value={enderecoColeta}
             onChange={(e) => setEnderecoColeta(e.target.value)}
-            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"
+            className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none text-slate-700"
           />
         </div>
 
-        {erro && <p className="text-red-600 text-sm font-medium">{erro}</p>}
-        {sucesso && <p className="text-green-600 text-sm font-medium">{sucesso}</p>}
+        {erro && (
+          <div className="p-4 bg-red-50 text-red-700 rounded-xl flex items-start gap-3 text-sm font-medium border border-red-100">
+            <AlertCircle className="w-5 h-5 flex-shrink-0" />
+            <p>{erro}</p>
+          </div>
+        )}
 
-        <button 
-          type="submit" 
+        {sucesso && (
+          <div className="p-4 bg-emerald-50 text-emerald-700 rounded-xl flex items-start gap-3 text-sm font-medium border border-emerald-100">
+            <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
+            <p>{sucesso}</p>
+          </div>
+        )}
+
+        <button
+          type="submit"
           disabled={carregando}
-          className="w-full bg-green-600 text-white py-2.5 rounded-lg font-semibold hover:bg-green-700 transition duration-200 disabled:opacity-50"
+          className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-xl font-bold shadow-sm shadow-emerald-200 transition-all active:scale-[0.98] disabled:opacity-70 disabled:pointer-events-none mt-2"
         >
-          {carregando ? 'A agendar...' : 'Confirmar Agendamento'}
+          {carregando ? 'Processando...' : 'Confirmar Coleta'}
         </button>
       </form>
     </div>
