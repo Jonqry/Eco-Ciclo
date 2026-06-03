@@ -5,33 +5,34 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "tb_waste_item")
+@Table(name = "tb_waste_items")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class WasteItem {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id; //[cite: 1]
+    private Long id;
 
-    private String nome; //[cite: 1]
-    private String tipo; //[cite: 1]
-    private Boolean isPerigoso; //[cite: 1]
-    private Double pesoEstimado; //[cite: 1]
+    @NotBlank(message = "O nome do resíduo é obrigatório")
+    private String nome; 
 
-    public Long getId() {
-        return id;
-    }
-    
-    public void setId(Long id) {
-        this.id = id;
-    }
-    
-    public String getNome() {
-        return nome;
-    }
-    
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
+    @NotBlank(message = "O tipo do resíduo é obrigatório")
+    private String tipo;
+
+    @NotNull(message = "Informe se o resíduo é perigoso")
+    private Boolean isPerigoso; 
+
+    @NotNull(message = "O peso estimado é obrigatório")
+    private Double pesoEstimado;
+
+    private Boolean isPrioritario = false; 
 }
