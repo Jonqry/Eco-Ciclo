@@ -1,0 +1,14 @@
+# Dependências do Node (O que causa os 10K)
+node_modules/
+
+# Arquivos de build do Next.js
+.next/
+out/
+build/
+
+# Arquivos de ambiente e logs
+.env*.local
+.DS_Store
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
