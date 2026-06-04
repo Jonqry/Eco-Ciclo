@@ -1,32 +1,43 @@
 'use client';
 
 import { useState } from 'react';
-import { Calendar, MapPin, Recycle, Clock, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { MapPin, Check, Calendar, Clock } from 'lucide-react';
 
 export default function FormAgendamento({ onAgendamentoSucesso }) {
-  
   const user = { id: 1, nome: "João Victor" };
 
+  
+  const [pontoColeta, setPontoColeta] = useState('');
   const [wasteId, setWasteId] = useState('');
-  const [dataHora, setDataHora] = useState('');
-  const [enderecoColeta, setEnderecoColeta] = useState('');
+  const [quantidade, setQuantidade] = useState('1');
+  const [data, setData] = useState('');
+  const [horario, setHorario] = useState('');
+  const [endereco, setEndereco] = useState('');
+  const [referencia, setReferencia] = useState('');
+
   
   const [erro, setErro] = useState('');
   const [sucesso, setSucesso] = useState('');
   const [carregando, setCarregando] = useState(false);
+
+  
+  const horariosDisponiveis = ['08:00', '09:30', '11:00', '13:30', '15:00', '16:30'];
 
   const handleAgendar = async (e) => {
     e.preventDefault();
     setErro('');
     setSucesso('');
 
-    if (!wasteId || !dataHora || !enderecoColeta.trim()) {
-      return setErro('Por favor, preencha todos os campos obrigatórios.');
+    if (!wasteId || !data || !horario || !endereco.trim()) {
+      return setErro('Por favor, preencha o resíduo, data, horário e endereço.');
     }
 
-    const dataSelecionada = new Date(dataHora);
+    
+    const dataHoraCombinada = `${data}T${horario}:00`;
+
+    const dataSelecionada = new Date(dataHoraCombinada);
     if (dataSelecionada < new Date()) {
-      return setErro('Não é possível agendar uma coleta no passado.');
+      return setErro('A data e hora selecionadas já passaram.');
     }
 
     setCarregando(true);
@@ -34,8 +45,8 @@ export default function FormAgendamento({ onAgendamentoSucesso }) {
     const payload = {
       userId: user.id,
       wasteId: Number(wasteId),
-      dataHora: dataHora,
-      enderecoColeta: enderecoColeta
+      dataHora: dataHoraCombinada,
+      enderecoColeta: endereco,
     };
 
     try {
@@ -46,100 +57,183 @@ export default function FormAgendamento({ onAgendamentoSucesso }) {
       });
 
       if (response.ok) {
-        setSucesso('Coleta agendada com sucesso!');
-        
+        setSucesso('Agendamento confirmado!');
+        setPontoColeta('');
         setWasteId('');
-        setDataHora('');
-        setEnderecoColeta('');
+        setQuantidade('1');
+        setData('');
+        setHorario('');
+        setEndereco('');
+        setReferencia('');
         
-        if (onAgendamentoSucesso) {
-          onAgendamentoSucesso();
-        }
+        if (onAgendamentoSucesso) onAgendamentoSucesso();
       } else {
-        setErro('Ocorreu um erro. Verifique os dados e tente novamente.');
+        setErro('Erro ao realizar o agendamento. Verifique os dados.');
       }
     } catch (err) {
-      setErro('Falha na comunicação com o servidor backend.');
+      setErro('Falha na comunicação com o servidor.');
     } finally {
       setCarregando(false);
     }
   };
 
   return (
-    <div className="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-100 h-full">
-      <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-slate-800">
-        <Calendar className="w-5 h-5 text-emerald-500" />
-        Nova Solicitação
-      </h2>
+    <div className="min-h-screen bg-[#FBFDF8] p-8 font-sans text-slate-800">
       
-      <form onSubmit={handleAgendar} className="space-y-5">
+      <div className="max-w-5xl mx-auto mb-8">
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-2">
+          Agendamento
+        </p>
+        <h1 className="text-4xl font-extrabold text-[#232F2A] mb-3">
+          Agende sua coleta
+        </h1>
+        <p className="text-gray-600 text-sm">
+          Escolha o ponto, o resíduo, a data e o horário. Confirme o endereço e pronto.
+        </p>
+      </div>
+
+      <div className="max-w-5xl mx-auto flex flex-col lg:flex-row gap-6 items-start">
         
-        <div className="space-y-2">
-          <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-            <Recycle className="w-4 h-4 text-slate-400" />
-            Tipo de Resíduo
-          </label>
-          <select 
-            value={wasteId}
-            onChange={(e) => setWasteId(e.target.value)}
-            className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none text-slate-700"
+        <div className="flex-1 bg-white p-8 rounded-3xl border border-gray-100 shadow-sm w-full">
+          <form className="space-y-6">
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Ponto de coleta</label>
+                <select
+                  value={pontoColeta}
+                  onChange={(e) => setPontoColeta(e.target.value)}
+                  className="w-full px-4 py-3 bg-[#F9FAF8] border border-gray-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-[#708769] text-gray-600 text-sm"
+                >
+                  <option value="">Selecione um ponto</option>
+                  <option value="ecoponto-centro">Ecoponto Centro</option>
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Tipo de resíduo</label>
+                <select
+                  value={wasteId}
+                  onChange={(e) => setWasteId(e.target.value)}
+                  className="w-full px-4 py-3 bg-[#F9FAF8] border border-gray-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-[#708769] text-gray-600 text-sm"
+                >
+                  <option value="">Selecione o resíduo</option>
+                  <option value="1">Óleo de Cozinha Usado</option>
+                  <option value="2">Baterias Velhas</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Quantidade (kg)</label>
+                <input
+                  type="number"
+                  min="1"
+                  value={quantidade}
+                  onChange={(e) => setQuantidade(e.target.value)}
+                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-[#708769] text-gray-800 text-sm"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Data</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Calendar className="h-4 w-4 text-gray-400" />
+                  </div>
+                  <input
+                    type="date"
+                    value={data}
+                    onChange={(e) => setData(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 bg-[#F9FAF8] border border-gray-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-[#708769] text-gray-600 text-sm"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-3">Horário disponível</label>
+              <div className="flex flex-wrap gap-3">
+                {horariosDisponiveis.map((hora) => (
+                  <button
+                    key={hora}
+                    type="button"
+                    onClick={() => setHorario(hora)}
+                    className={`flex items-center gap-2 px-4 py-2 border rounded-full text-sm font-medium transition-colors ${
+                      horario === hora
+                        ? 'border-[#708769] bg-[#708769]/10 text-[#708769]'
+                        : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                    }`}
+                  >
+                    <Clock className="w-4 h-4" />
+                    {hora}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Endereço para retirada</label>
+              <input
+                type="text"
+                placeholder="Ex: Rua, número, bairro, Recife"
+                value={endereco}
+                onChange={(e) => setEndereco(e.target.value)}
+                className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-[#708769] text-gray-800 text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Ponto de referência (opcional)</label>
+              <textarea 
+                rows="2"
+                placeholder="Ex.: portão verde ao lado da padaria"
+                value={referencia}
+                onChange={(e) => setReferencia(e.target.value)}
+                className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-[#708769] text-gray-800 text-sm resize-none"
+              ></textarea>
+            </div>
+
+            {erro && <p className="text-red-500 text-sm font-medium">{erro}</p>}
+            {sucesso && <p className="text-[#708769] text-sm font-medium">{sucesso}</p>}
+
+          </form>
+        </div>
+
+        <div className="w-full lg:w-[380px] bg-[#EBECE1] p-8 rounded-3xl border border-[#DFE1D4]">
+          <h2 className="text-xl font-bold text-[#232F2A] mb-6">Resumo</h2>
+          
+          <ul className="space-y-4 mb-8">
+            <li className={`flex items-center gap-3 text-sm ${pontoColeta ? 'text-[#4A5D45] font-medium' : 'text-gray-500'}`}>
+              <MapPin className="w-4 h-4" />
+              {pontoColeta ? 'Ponto selecionado' : 'Escolha um ponto'}
+            </li>
+            <li className={`flex items-center gap-3 text-sm ${wasteId ? 'text-[#4A5D45] font-medium' : 'text-gray-500'}`}>
+              <Check className="w-4 h-4" />
+              {wasteId ? 'Resíduo selecionado' : 'Escolha o resíduo'}
+            </li>
+            <li className={`flex items-center gap-3 text-sm ${data ? 'text-[#4A5D45] font-medium' : 'text-gray-500'}`}>
+              <Calendar className="w-4 h-4" />
+              {data && horario ? `${data.split('-').reverse().join('/')} às ${horario}` : 'Escolha uma data'}
+            </li>
+          </ul>
+
+          <div className="bg-white p-5 rounded-2xl mb-6 shadow-sm">
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Pontos estimados</p>
+            <p className="text-4xl font-extrabold text-[#708769]">+{wasteId ? quantidade * 50 : 0}</p>
+          </div>
+
+          <button
+            onClick={handleAgendar}
+            disabled={carregando}
+            className="w-full bg-[#708769] hover:bg-[#5C7056] text-white py-3.5 rounded-xl font-medium transition-colors disabled:opacity-50"
           >
-            <option value="" disabled>Selecione um item do inventário...</option>
-            <option value="1">Óleo de Cozinha Usado</option>
-            <option value="2">Baterias Velhas</option>
-            <option value="3">Resíduos Eletrônicos</option>
-          </select>
+            {carregando ? 'A processar...' : 'Confirmar agendamento'}
+          </button>
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-            <Clock className="w-4 h-4 text-slate-400" />
-            Data e Horário
-          </label>
-          <input
-            type="datetime-local"
-            value={dataHora}
-            onChange={(e) => setDataHora(e.target.value)}
-            className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none text-slate-700"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-slate-400" />
-            Endereço de Coleta
-          </label>
-          <input
-            type="text"
-            placeholder="Ex: Av. Governador Agamenon Magalhães, Recife"
-            value={enderecoColeta}
-            onChange={(e) => setEnderecoColeta(e.target.value)}
-            className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none text-slate-700"
-          />
-        </div>
-
-        {erro && (
-          <div className="p-4 bg-red-50 text-red-700 rounded-xl flex items-start gap-3 text-sm font-medium border border-red-100">
-            <AlertCircle className="w-5 h-5 flex-shrink-0" />
-            <p>{erro}</p>
-          </div>
-        )}
-
-        {sucesso && (
-          <div className="p-4 bg-emerald-50 text-emerald-700 rounded-xl flex items-start gap-3 text-sm font-medium border border-emerald-100">
-            <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
-            <p>{sucesso}</p>
-          </div>
-        )}
-
-        <button
-          type="submit"
-          disabled={carregando}
-          className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-xl font-bold shadow-sm shadow-emerald-200 transition-all active:scale-[0.98] disabled:opacity-70 disabled:pointer-events-none mt-2"
-        >
-          {carregando ? 'Processando...' : 'Confirmar Coleta'}
-        </button>
-      </form>
+      </div>
     </div>
   );
 }
