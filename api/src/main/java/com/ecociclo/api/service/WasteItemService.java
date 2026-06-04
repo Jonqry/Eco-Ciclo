@@ -1,6 +1,7 @@
 package com.ecociclo.api.service;
 
 import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,7 +15,6 @@ public class WasteItemService {
     @Autowired
     private WasteItemRepository repository;
 
-    // Regra de negócio isolada para reaproveitar no cadastrar e atualizar
     private void classificarPrioridade(WasteItem item) {
         if (item.getTipo() != null && item.getTipo().equalsIgnoreCase("eletrônico")) {
             item.setIsPrioritario(true);
@@ -24,7 +24,6 @@ public class WasteItemService {
     }
 
     public WasteItemResponseDTO cadastrar(WasteItem item) {
-        // Aplica a classificação automática antes de salvar
         classificarPrioridade(item);
         
         WasteItem salvo = repository.save(item);
@@ -50,7 +49,6 @@ public class WasteItemService {
         itemExistente.setIsPerigoso(itemAtualizado.getIsPerigoso());
         itemExistente.setPesoEstimado(itemAtualizado.getPesoEstimado());
         
-        // Recalcula a prioridade caso o tipo tenha mudado na atualização
         classificarPrioridade(itemExistente);
         
         WasteItem salvo = repository.save(itemExistente);

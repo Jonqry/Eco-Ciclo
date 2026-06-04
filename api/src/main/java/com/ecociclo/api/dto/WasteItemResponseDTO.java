@@ -8,7 +8,7 @@ public record WasteItemResponseDTO(
     String tipo, 
     Boolean isPerigoso, 
     Double pesoEstimado,
-    Boolean isPrioritario // Adicionado aqui
+    Boolean isPrioritario 
 ) {
     public WasteItemResponseDTO(WasteItem item) {
         this(
@@ -17,7 +17,7 @@ public record WasteItemResponseDTO(
             item.getTipo(), 
             item.getIsPerigoso(), 
             item.getPesoEstimado(),
-            item.getIsPrioritario() // Adicionado aqui
+            item.getIsPrioritario() 
         );
     }
 }

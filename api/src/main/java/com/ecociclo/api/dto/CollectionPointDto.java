@@ -1,6 +1,7 @@
 package com.ecociclo.api.dto;
 
 import com.ecociclo.api.model.CollectionPoint;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -33,8 +34,6 @@ public class CollectionPointDto {
 
     private String tiposResiduosAceitos;
 
-    // Construtor para converter de entidade para DTO (opcional, mas útil para
-    // respostas)
     public CollectionPointDto(CollectionPoint collectionPoint) {
         this.id = collectionPoint.getId();
         this.nomeUnidade = collectionPoint.getNomeUnidade();

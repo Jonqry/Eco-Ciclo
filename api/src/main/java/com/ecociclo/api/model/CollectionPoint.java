@@ -37,11 +37,7 @@ public class CollectionPoint {
     @NotNull(message = "A capacidade máxima é obrigatória")
     private Double capacidadeMax;
 
+    private Double volumeAtual = 0.0; 
 
-    // validação de capacidade
-    private Double volumeAtual = 0.0; // Exemplo: inicia com 0
-
-    // Campo para tipos de resíduos aceitos (ex: String, ou uma lista de
-    // Enums/Strings)
     private String tiposResiduosAceitos;
 }
