@@ -7,14 +7,14 @@ const CollectionPointCard = ({ point, onSelect }) => {
   const getProgressColor = (percent) => {
     if (percent > 90) return 'bg-rose-500';
     if (percent > 75) return 'bg-amber-400';
-    return 'bg-emerald-500';
+    return 'bg-[#7fa17e]'; // Mudou de bg-emerald-500 para o verde oliva
   };
 
   const residuosTags = point.tiposResiduosAceitos.split(',').map(tag => tag.trim());
 
   return (
     <div 
-      className="bg-white rounded-2xl border border-slate-100 p-5 mb-4 transition-all duration-300 hover:border-emerald-200 hover:shadow-xl hover:shadow-emerald-500/10 cursor-pointer group relative overflow-hidden"
+      className="bg-white rounded-2xl border border-slate-100 p-5 mb-4 transition-all duration-300 hover:border-[#7fa17e]/30 hover:shadow-xl hover:shadow-[#7fa17e]/10 cursor-pointer group relative overflow-hidden"
       onClick={() => onSelect && onSelect(point.id)}
     >
       {/* Indicador de Status Lateral */}
@@ -23,38 +23,38 @@ const CollectionPointCard = ({ point, onSelect }) => {
       <div className="flex justify-between items-start mb-3">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
-            <h3 className="text-lg font-bold text-slate-800 group-hover:text-emerald-600 transition-colors leading-tight">
+            <h3 className="text-lg font-bold text-slate-800 group-hover:text-[#7fa17e] transition-colors leading-tight">
               {point.nomeUnidade}
             </h3>
             {ocupacaoPercent < 50 && (
-              <span className="flex items-center gap-0.5 text-[9px] font-black bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full uppercase tracking-wider">
+              <span className="flex items-center gap-0.5 text-[9px] font-black bg-[#7fa17e]/10 text-[#7fa17e] px-2 py-0.5 rounded-full uppercase tracking-wider">
                 <Zap size={8} /> Disponível
               </span>
             )}
           </div>
           <div className="flex items-center text-slate-400 text-xs">
-            <MapPin size={12} className="mr-1 flex-shrink-0 text-emerald-500" />
+            <MapPin size={12} className="mr-1 flex-shrink-0 text-[#7fa17e]" />
             <span className="truncate">{point.endereco}</span>
           </div>
         </div>
-        <div className="text-slate-300 group-hover:text-emerald-500 transition-colors ml-2">
+        <div className="text-slate-300 group-hover:text-[#7fa17e] transition-colors ml-2">
           <ChevronRight size={20} />
         </div>
       </div>
 
-      {/* Tags de Resíduos (Claras e Visíveis) */}
+      {/* Tags de Resíduos (Convertidas para o novo verde oliva) */}
       <div className="flex flex-wrap gap-1.5 mb-5">
         {residuosTags.map((tag, i) => (
           <span 
             key={i} 
-            className="px-2.5 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-bold rounded-md border border-emerald-100 uppercase tracking-tight"
+            className="px-2.5 py-0.5 bg-slate-50 text-[#7fa17e] text-[10px] font-bold rounded-md border border-[#7fa17e]/20 uppercase tracking-tight"
           >
             {tag}
           </span>
         ))}
       </div>
 
-      {/* Barra de Capacidade (Informação Completa) */}
+      {/* Barra de Capacidade */}
       <div className="space-y-2 bg-slate-50 p-3 rounded-xl border border-slate-100">
         <div className="flex justify-between items-center text-[11px]">
           <span className="text-slate-500 font-bold uppercase tracking-tighter flex items-center gap-1">
