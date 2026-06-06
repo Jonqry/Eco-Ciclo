@@ -1,7 +1,9 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
+import useSWR from 'swr';
 import CollectionPointCard from '../components/CollectionPointCard';
+import { usePontoStore } from '../store/usePontoStore';
 import { Search, Leaf, X, Filter, Layers } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 
@@ -10,28 +12,39 @@ const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLaye
 const Marker = dynamic(() => import('react-leaflet').then(mod => mod.Marker), { ssr: false });
 const Popup = dynamic(() => import('react-leaflet').then(mod => mod.Popup), { ssr: false });
 
+const fetcher = (url) => fetch(url).then((res) => {
+  if (!res.ok) throw new Error('Erro ao buscar dados da API');
+  return res.json();
+});
+
 export default function PontosDeColetaPage() {
-  const [pontos, setPontos] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
+  // Puxando os novos estados de posição e zoom do Zustand
+  const { 
+    searchTerm, 
+    setSearchTerm, 
+    clearSearch, 
+    pontoSelecionadoId, 
+    setPontoSelecionadoId,
+    mapMode,
+    toggleMapMode,
+    mapCenter,
+    mapZoom,
+    setMapPosition
+  } = usePontoStore();
+  
   const [map, setMap] = useState(null);
 
-  const fetchPontos = (tipo = '') => {
-    setLoading(true);
-    let url = 'http://localhost:8080/api/collection-points';
-    if (tipo) url += `/search/by-type?tipoResiduo=${tipo}`;
+  const apiUrl = searchTerm
+    ? `http://localhost:8080/api/collection-points/search/by-type?tipoResiduo=${searchTerm}`
+    : 'http://localhost:8080/api/collection-points';
 
-    fetch(url)
-      .then(res => res.json())
-      .then(data => {
-        setPontos(data);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  };
+  const { data: pontos = [], error, isLoading } = useSWR(apiUrl, fetcher, {
+    revalidateOnFocus: true,
+    refreshInterval: 3000,
+    dedupingInterval: 2000,
+  });
 
   useEffect(() => {
-    fetchPontos();
     import('leaflet').then(L => {
       delete L.Icon.Default.prototype._getIconUrl;
       L.Icon.Default.mergeOptions({
@@ -42,9 +55,42 @@ export default function PontosDeColetaPage() {
     });
   }, []);
 
-  const centralizarNoMapa = (lat, lng) => {
-    if (map) map.flyTo([lat, lng], 15);
+  // Adiciona escutadores na instância do mapa para salvar a posição atual no Zustand
+  useEffect(() => {
+    if (!map) return;
+
+    const salvarPosicaoAtual = () => {
+      const centro = map.getCenter();
+      const zoom = map.getZoom();
+      setMapPosition([centro.lat, centro.lng], zoom);
+    };
+
+    // Toda vez que o usuário arrastar ou der zoom, salva no Zustand
+    map.on('moveend', salvarPosicaoAtual);
+    map.on('zoomend', salvarPosicaoAtual);
+
+    return () => {
+      map.off('moveend', salvarPosicaoAtual);
+      map.off('zoomend', salvarPosicaoAtual);
+    };
+  }, [map, setMapPosition]);
+
+  const centralizarNoMapa = (id, lat, lng) => {
+    setPontoSelecionadoId(id);
+    if (map) {
+      map.flyTo([lat, lng], 15);
+      // Salva imediatamente no Zustand a nova posição do clique
+      setMapPosition([lat, lng], 15);
+    }
   };
+
+  const tileUrl = mapMode === 'default'
+    ? 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+    : 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+
+  const attributionUrl = mapMode === 'default'
+    ? '&copy; OpenStreetMap contributors'
+    : 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community';
 
   return (
     <div className="relative w-full h-screen bg-white font-sans overflow-hidden">
@@ -52,14 +98,15 @@ export default function PontosDeColetaPage() {
       {/* MAPA EM TELA CHEIA */}
       <div className="absolute inset-0 z-0">
         <MapContainer 
-          center={[-8.0539, -34.8811]} 
-          zoom={13} 
+          center={mapCenter}  // <--- Agora consome do Zustand dinamicamente
+          zoom={mapZoom}      // <--- Agora consome do Zustand dinamicamente
           style={{ height: '100%', width: '100%' }}
           ref={setMap}
         >
           <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; OpenStreetMap contributors'
+            key={mapMode}
+            url={tileUrl}
+            attribution={attributionUrl}
           />
           {pontos.map(ponto => (
             <Marker key={ponto.id} position={[ponto.latitude, ponto.longitude]}>
@@ -94,29 +141,35 @@ export default function PontosDeColetaPage() {
                 </div>
                 EcoCiclo
               </h1>
-              <div className="p-2 bg-slate-100 rounded-full text-slate-400">
+              
+              <button 
+                onClick={toggleMapMode}
+                title="Alternar entre Mapa e Satélite"
+                className={`p-2 rounded-full transition-all duration-300 shadow-sm border ${
+                  mapMode === 'satellite' 
+                    ? 'bg-[#7fa17e] text-white border-[#7fa17e]' 
+                    : 'bg-slate-100 text-slate-500 hover:bg-slate-200 border-transparent'
+                }`}
+              >
                 <Layers size={18} />
-              </div>
+              </button>
             </div>
             
-            <form onSubmit={(e) => { e.preventDefault(); fetchPontos(searchTerm); }} className="relative group">
+            <div className="relative group">
               <input
                 type="text"
                 placeholder="Filtrar por tipo (ex: vidro, papel...)"
                 className="w-full pl-12 pr-12 py-4 bg-slate-100 border-2 border-transparent rounded-2xl text-sm font-bold text-slate-700 placeholder:text-slate-400 focus:bg-white focus:border-[#7fa17e] focus:ring-0 transition-all shadow-inner"
                 value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  if (e.target.value === '') fetchPontos('');
-                }}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
               <Search className="absolute left-4 top-4 text-slate-400 group-focus-within:text-[#7fa17e] transition-colors" size={20} />
               {searchTerm && (
-                <button type="button" onClick={() => { setSearchTerm(''); fetchPontos(''); }} className="absolute right-4 top-4 text-slate-300 hover:text-rose-500">
+                <button type="button" onClick={clearSearch} className="absolute right-4 top-4 text-slate-300 hover:text-rose-500">
                   <X size={20} />
                 </button>
               )}
-            </form>
+            </div>
           </div>
 
           {/* Lista de Cards */}
@@ -126,17 +179,22 @@ export default function PontosDeColetaPage() {
               <span className="text-[10px] font-black bg-slate-100 text-slate-500 px-2 py-1 rounded-md">{pontos.length} ATIVOS</span>
             </div>
 
-            {loading ? (
+            {isLoading ? (
               <div className="flex flex-col items-center justify-center py-20 text-slate-300 animate-pulse">
                 <div className="w-10 h-10 border-4 border-[#7fa17e] border-t-transparent rounded-full animate-spin mb-4"></div>
-                <p className="text-xs font-bold uppercase tracking-widest">Sincronizando Banco...</p>
+                <p className="text-xs font-bold uppercase tracking-widest">Sincronizando Banco (SWR)...</p>
+              </div>
+            ) : error ? (
+              <div className="bg-rose-50 rounded-3xl p-6 text-center border border-rose-100">
+                <p className="text-rose-600 font-bold text-sm">Falha na conexão com o servidor de dados.</p>
               </div>
             ) : pontos.length > 0 ? (
               pontos.map(ponto => (
                 <CollectionPointCard 
                   key={ponto.id} 
                   point={ponto} 
-                  onSelect={() => centralizarNoMapa(ponto.latitude, ponto.longitude)}
+                  isSelect={ponto.id === pontoSelecionadoId}
+                  onSelect={() => centralizarNoMapa(ponto.id, ponto.latitude, ponto.longitude)}
                 />
               ))
             ) : (
