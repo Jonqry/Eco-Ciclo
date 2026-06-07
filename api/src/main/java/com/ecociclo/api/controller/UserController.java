@@ -1,5 +1,7 @@
 package com.ecociclo.api.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -18,11 +20,9 @@ import com.ecociclo.api.service.UserService;
 
 import jakarta.validation.Valid;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/api/usuarios")
-@CrossOrigin("*")
+@CrossOrigin(origins = "http://localhost:3000")
 public class UserController {
 
     @Autowired
@@ -33,10 +33,10 @@ public class UserController {
         return ResponseEntity.status(201).body(service.cadastrar(user));
     }
 
-    @GetMapping("/{id}")
+    @GetMapping
     public ResponseEntity<List<UserResponseDTO>> listarTodos() {
         return ResponseEntity.ok(service.listarTodos());
-}
+    }
 
     @PutMapping("/{id}")
     public ResponseEntity<UserResponseDTO> atualizar(@PathVariable Long id, @RequestBody User user) {

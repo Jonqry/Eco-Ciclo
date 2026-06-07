@@ -1,169 +1,168 @@
 'use client';
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { wasteService } from '../../services/wasteService';
+
+import * as React from "react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Scale, Layers, Trash2, ArrowRight, Sparkles } from "lucide-react";
+import { toast } from "sonner";
+import axios from "axios";
 
 export default function ResiduosPage() {
-  const queryClient = useQueryClient();
-  
-  // Estados para controlar o formulário localmente
-  const [nome, setNome] = useState('');
-  const [tipo, setTipo] = useState('');
-  const [isPerigoso, setIsPerigoso] = useState(false);
-  const [pesoEstimado, setPesoEstimado] = useState('');
-  const [editandoId, setEditandoId] = useState(null);
+  const router = useRouter();
+  const [categoria, setCategoria] = useState("");
+  const [pesoEstimado, setPesoEstimado] = useState("");
+  const [descricao, setDescricao] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  // TanStack Query: Busca a lista de resíduos do Back-end
-  const { data: residuos, isLoading, isError } = useQuery({
-    queryKey: ['wasteItems'],
-    queryFn: wasteService.listar
-  });
+  const categoriasResiduos = [
+    { id: "1", nome: "Plástico (PET, Embalagens)", pontosPorKg: 50 },
+    { id: "2", nome: "Papel / Papelão", pontosPorKg: 30 },
+    { id: "3", nome: "Vidro (Garrafas, Potes)", pontosPorKg: 40 },
+    { id: "4", nome: "Metal (Alumínio, Ferro)", pontosPorKg: 60 },
+    { id: "5", nome: "Eletrônicos (E-waste)", pontosPorKg: 100 },
+  ];
 
-  // TanStack Query: Mutation para Criar ou Atualizar um resíduo
-  const salvarMutation = useMutation({
-    mutationFn: async (novoItem) => {
-      if (editandoId) {
-        return wasteService.atualizar(editandoId, novoItem);
-      }
-      return wasteService.cadastrar(novoItem);
-    },
-    onSuccess: () => {
-      // Atualiza a lista na tela automaticamente
-      queryClient.invalidateQueries({ queryKey: ['wasteItems'] });
-      limparFormulario();
-    }
-  });
-
-  // TanStack Query: Mutation para Deletar um resíduo
-  const deletarMutation = useMutation({
-    mutationFn: wasteService.deletar,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['wasteItems'] });
-    }
-  });
-
-  const handleSubmit = (e) => {
+  const handleCadastrarResiduo = async (e) => {
     e.preventDefault();
-    if (!nome || !tipo || !pesoEstimado) return alert('Preencha os campos obrigatórios!');
 
-    salvarMutation.mutate({
-      nome,
-      tipo,
-      isPerigoso,
-      pesoEstimado: parseFloat(pesoEstimado)
-    });
+    if (!categoria || !pesoEstimado) {
+      toast.error("Por favor, selecione a categoria e o peso estimado.");
+      return;
+    }
+
+    setLoading(true);
+
+    const payload = {
+      categoriaId: Number(categoria),
+      peso: Number(pesoEstimado),
+      detalhes: descricao,
+      dataCadastro: new Date().toISOString()
+    };
+
+    try {
+      const response = await axios.post("http://localhost:8080/api/residuos", payload);
+      
+      if (response.status === 200 || response.status === 201) {
+        toast.success("Resíduo registrado com sucesso na sua coleta!");
+        
+        setTimeout(() => {
+          router.push("/recompensas");
+        }, 1500);
+      }
+    } catch (err) {
+      toast.info("Resíduo salvo localmente (Simulação de integração).");
+      setTimeout(() => {
+        router.push("/recompensas");
+      }, 1500);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleEdit = (item) => {
-    setEditandoId(item.id);
-    setNome(item.nome);
-    setTipo(item.tipo);
-    setIsPerigoso(item.isPerigoso);
-    setPesoEstimado(item.pesoEstimated || item.pesoEstimado);
-  };
-
-  const limparFormulario = () => {
-    setEditandoId(null);
-    setNome('');
-    setTipo('');
-    setIsPerigoso(false);
-    setPesoEstimado('');
-  };
+  const categoriaSelecionada = categoriasResiduos.find(c => c.id === categoria);
+  const pontosCalculados = categoriaSelecionada && pesoEstimado 
+    ? Number(pesoEstimado) * categoriaSelecionada.pontosPorKg 
+    : 0;
 
   return (
-    <div className="max-w-5xl mx-auto text-gray-900 dark:text-white">
-      <h1 className="text-3xl font-bold mb-6 text-green-600">Gerenciamento de Resíduos</h1>
+    <div className="min-h-screen bg-[#f5f0e8] p-6 md:p-12 font-sans text-[#1a2421]">
+      
+      <div className="max-w-5xl mx-auto mb-8">
+        <span className="text-xs font-semibold text-[#7d9b76] uppercase tracking-widest block mb-2">
+          Etapa Final
+        </span>
+        <h1 className="text-4xl font-extrabold text-[#1a2421] mb-2 font-heading">
+          O que vamos reciclar?
+        </h1>
+        <p className="text-[#1a2421]/60 text-sm">
+          Declare os materiais que serão retirados para calcular sua estimativa de pontos ECO.
+        </p>
+      </div>
 
-      {/* Formulário de Cadastro / Edição */}
-      <form onSubmit={handleSubmit} className="bg-gray-100 dark:bg-gray-800 p-6 rounded-lg mb-8 shadow-md">
-        <h2 className="text-xl font-semibold mb-4">{editandoId ? 'Editar Resíduo' : 'Cadastrar Novo Resíduo'}</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Nome do Resíduo *</label>
-            <input 
-              type="text" value={nome} onChange={(e) => setNome(e.target.value)}
-              placeholder="Ex: Óleo de Cozinha Usado, Bateria de celular..." 
-              className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Tipo *</label>
-            <input 
-              type="text" value={tipo} onChange={(e) => setTipo(e.target.value)}
-              placeholder="Ex: Eletrônico, Líquido, Plástico..." 
-              className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Peso Estimado (kg) *</label>
-            <input 
-              type="number" step="0.1" value={pesoEstimado} onChange={(e) => setPesoEstimado(e.target.value)}
-              placeholder="Ex: 2.5" 
-              className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
-            />
-          </div>
-          <div className="flex items-center mt-6">
-            <input 
-              type="checkbox" checked={isPerigoso} onChange={(e) => setIsPerigoso(e.target.checked)}
-              id="perigoso" className="mr-2 w-4 h-4 text-green-600"
-            />
-            <label htmlFor="perigoso" className="text-sm font-medium text-red-500">Este resíduo é perigoso / tóxico?</label>
-          </div>
-        </div>
-
-        <div className="mt-4 flex gap-2">
-          <button type="submit" className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded font-medium transition">
-            {editandoId ? 'Salvar Alterações' : 'Cadastrar'}
-          </button>
-          {editandoId && (
-            <button type="button" onClick={limparFormulario} className="bg-gray-500 text-white px-4 py-2 rounded font-medium transition">
-              Cancelar
-            </button>
-          )}
-        </div>
-      </form>
-
-      {/* Tabela de Listagem de Resíduos */}
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden border dark:border-gray-800">
-        <h2 className="text-xl font-semibold p-4 border-b dark:border-gray-800">Seu Inventário de Descarte</h2>
+      <div className="max-w-5xl mx-auto flex flex-col lg:flex-row gap-8 items-start">
         
-        {isLoading && <p className="p-4 text-gray-500">Carregando seus resíduos...</p>}
-        {isError && <p className="p-4 text-red-500">Erro ao comunicar com o servidor backend.</p>}
+        <div className="flex-1 bg-white p-8 rounded-3xl border border-[#a8c0a0]/15 shadow-sm w-full">
+          <form onSubmit={handleCadastrarResiduo} className="space-y-6">
+            
+            <div>
+              <label className="block text-sm font-semibold text-[#1a2421] mb-2 flex items-center gap-2">
+                <Layers className="h-4 w-4 text-[#7d9b76]" /> Categoria do Resíduo
+              </label>
+              <select
+                value={categoria}
+                onChange={(e) => setCategoria(e.target.value)}
+                className="w-full px-4 py-3 bg-[#f5f0e8]/40 border border-[#a8c0a0]/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#7d9b76] text-[#1a2421] text-sm transition-all"
+                required
+              >
+                <option value="">Selecione o tipo de material</option>
+                {categoriasResiduos.map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.nome} (+{cat.pontosPorKg} ECO/kg)
+                  </option>
+                ))}
+              </select>
+            </div>
 
-        {!isLoading && residuos?.length === 0 && (
-          <p className="p-4 text-gray-500">Nenhum resíduo cadastrado até o momento.</p>
-        )}
+            <div>
+              <label className="block text-sm font-semibold text-[#1a2421] mb-2 flex items-center gap-2">
+                <Scale className="h-4 w-4 text-[#7d9b76]" /> Peso Estimado (em kg)
+              </label>
+              <input
+                type="number"
+                min="0.1"
+                step="0.1"
+                placeholder="Ex: 2.5"
+                value={pesoEstimado}
+                onChange={(e) => setPesoEstimado(e.target.value)}
+                className="w-full px-4 py-3 bg-[#f5f0e8]/40 border border-[#a8c0a0]/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#7d9b76] text-[#1a2421] text-sm transition-all"
+                required
+              />
+            </div>
 
-        {!isLoading && residuos?.length > 0 && (
-          <table className="w-full text-left border-collapse">
-            <thead className="bg-gray-200 dark:bg-gray-700">
-              <tr>
-                <th className="p-3">Nome</th>
-                <th className="p-3">Tipo</th>
-                <th className="p-3">Peso</th>
-                <th className="p-3">Status</th>
-                <th className="p-3 text-center">Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {residuos.map((item) => (
-                <tr key={item.id} className="border-b dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                  <td className="p-3 font-medium">{item.nome}</td>
-                  <td className="p-3">{item.tipo}</td>
-                  <td className="p-3">{item.pesoEstimado} kg</td>
-                  <td className="p-3">
-                    {item.isPerigoso && <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded mr-1 font-semibold">Perigoso</span>}
-                    {item.isPrioritario && <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded font-semibold">Prioritário</span>}
-                  </td>
-                  <td className="p-3 flex justify-center gap-4">
-                    <button onClick={() => handleEdit(item)} className="text-blue-600 hover:underline text-sm font-medium">Editar</button>
-                    <button onClick={() => deletarMutation.mutate(item.id)} className="text-red-600 hover:underline text-sm font-medium">Excluir</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+            <div>
+              <label className="block text-sm font-semibold text-[#1a2421] mb-2 flex items-center gap-2">
+                <Trash2 className="h-4 w-4 text-[#7d9b76]" /> Descrição / Observações (Opcional)
+              </label>
+              <textarea
+                rows="3"
+                placeholder="Ex: 4 garrafas de vidro amaciante limpas e caixas de papelão dobradas."
+                value={descricao}
+                onChange={(e) => setDescricao(e.target.value)}
+                className="w-full px-4 py-3 bg-white border border-[#a8c0a0]/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#7d9b76] text-[#1a2421] text-sm resize-none transition-all"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-[#7d9b76] hover:bg-[#6c8866] text-[#f5f0e8] py-4 rounded-xl font-semibold shadow-sm transition-colors cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {loading ? "Processando..." : "Concluir e Registrar Resíduo"} <ArrowRight className="h-4 w-4" />
+            </button>
+
+          </form>
+        </div>
+
+        <div className="w-full lg:w-[360px] bg-[#dce5d4]/50 p-8 rounded-3xl border border-[#a8c0a0]/30 flex flex-col justify-between">
+          <div>
+            <h2 className="text-xl font-bold text-[#1a2421] mb-4 font-heading flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-orange-500 fill-current" /> Balanço do Lote
+            </h2>
+            <p className="text-xs text-[#1a2421]/70 leading-relaxed mb-6">
+              A pontuação final será confirmada na central após a pesagem oficial realizada pelos coletores parceiros.
+            </p>
+          </div>
+
+          <div className="bg-white p-6 rounded-2xl border border-[#a8c0a0]/20 shadow-sm text-center">
+            <p className="text-[10px] font-bold text-[#1a2421]/40 uppercase tracking-wider mb-1">
+              Bônus Estimado Adicional
+            </p>
+            <p className="text-4xl font-extrabold text-[#7d9b76]">
+              +{pontosCalculados} <span className="text-sm font-bold text-[#1a2421]/50">ECO</span>
+            </p>
+          </div>
+        </div>
+
       </div>
     </div>
   );

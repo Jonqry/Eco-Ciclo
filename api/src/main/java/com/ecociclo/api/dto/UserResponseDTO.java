@@ -7,7 +7,8 @@ public record UserResponseDTO(
     String nome, 
     String email, 
     Integer streak, 
-    Integer totalPontos
+    Integer totalPontos,
+    Double totalResiduosKg 
 ) {
     public UserResponseDTO(User user) {
         this(
@@ -15,7 +16,8 @@ public record UserResponseDTO(
             user.getNome(), 
             user.getEmail(), 
             user.getStreak(), 
-            user.getTotalPontos()
+            user.getTotalPontos(),
+            user.getTotalResiduosKg() 
         );
     }
 }

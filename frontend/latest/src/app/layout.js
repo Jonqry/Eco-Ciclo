@@ -1,52 +1,55 @@
+'use client';
+
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { usePathname } from "next/navigation"; 
 
-// 1. LINHA ADICIONADA: Importa o arquivo de configuração que você criou
 import { Providers } from "./providers"; 
-
 import Navbar from "./components/Navbar";
 import Sidebar from "./components/Sidebar";
 import Footer from "./components/Footer";
+import AuthGuard from "./components/AuthGuard"; 
 
 const geistSans = Geist({
  variable: "--font-geist-sans",
- subsets:["latin"]
+ subsets: ["latin"]
 });
 
 const geistMono = Geist_Mono({
- variable:"--font-geist-mono",
- subsets:["latin"]
+ variable: "--font-geist-mono",
+ subsets: ["latin"]
 });
 
-export const metadata = {
- title:"Eco Ciclo",
- description:"Sistema de reciclagem"
-};
+export default function RootLayout({ children }) {
+  const pathname = usePathname();
 
-export default function RootLayout({children}) {
- return (
-  <html
-    lang="pt-BR"
-    className={`${geistSans.variable} ${geistMono.variable}`}
-  >
-    <body className="min-h-screen flex flex-col">
-      {/* 2. LINHA ADICIONADA: Envolve todo o site para ativar o TanStack Query */}
-      <Providers>
-        
-        <Navbar/>
+  const rotasDeAutenticacao = ['/login', '/register'];
+  const ehRotaPublica = rotasDeAutenticacao.includes(pathname);
 
-        <div className="flex flex-1">
-          <Sidebar/>
+  return (
+    <html
+      lang="pt-BR"
+      className={`${geistSans.variable} ${geistMono.variable}`}
+    >
+      <body className="min-h-screen flex flex-col bg-[#f5f0e8] antialiased">
+        <Providers>
+          <AuthGuard>
 
-          <main className="flex-1 p-6">
-            {children}
-          </main>
-        </div>
+            {!ehRotaPublica && <Navbar />}
 
-        <Footer/>
+            <div className="flex flex-1">
+              {!ehRotaPublica && <Sidebar />}
 
-      </Providers>
-    </body>
-  </html>
- )
+              <main className="flex-1">
+                {children}
+              </main>
+            </div>
+
+            {!ehRotaPublica && <Footer />}
+
+          </AuthGuard>
+        </Providers>
+      </body>
+    </html>
+  );
 }

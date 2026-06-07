@@ -1,7 +1,6 @@
 package com.ecociclo.api.service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,15 +19,20 @@ public class UserService {
         if(repository.findByEmail(user.getEmail()).isPresent()) {
             throw new RuntimeException("E-mail já cadastrado.");
         }
+
+        if (user.getStreak() == null) user.setStreak(0);
+        if (user.getTotalPontos() == null) user.setTotalPontos(0);
+        if (user.getTotalResiduosKg() == null) user.setTotalResiduosKg(0.0);
+
         User salvo = repository.save(user);
         return new UserResponseDTO(salvo);
     }
 
     public List<UserResponseDTO> listarTodos() {
-    return repository.findAll().stream()
-            .map(UserResponseDTO::new)
-            .toList();
-}
+        return repository.findAll().stream()
+                .map(UserResponseDTO::new)
+                .toList();
+    }
 
     public User buscarPorId(Long id) {
         return repository.findById(id)
@@ -40,6 +44,10 @@ public class UserService {
         
         userExistente.setNome(userAtualizado.getNome());
         userExistente.setEmail(userAtualizado.getEmail());
+        
+        if (userAtualizado.getStreak() != null) userExistente.setStreak(userAtualizado.getStreak());
+        if (userAtualizado.getTotalPontos() != null) userExistente.setTotalPontos(userAtualizado.getTotalPontos());
+        if (userAtualizado.getTotalResiduosKg() != null) userExistente.setTotalResiduosKg(userAtualizado.getTotalResiduosKg());
         
         User salvo = repository.save(userExistente);
         return new UserResponseDTO(salvo);

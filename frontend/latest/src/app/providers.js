@@ -6,7 +6,7 @@ export function Providers({ children }) {
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: {
       queries: {
-        refetchOnWindowFocus: false, // Evita requisições repetidas ao clicar fora/dentro da janela
+        refetchOnWindowFocus: false, 
       },
     },
   }));

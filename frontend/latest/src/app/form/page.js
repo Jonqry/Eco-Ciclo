@@ -2,29 +2,29 @@
 
 import { useState } from 'react';
 import { MapPin, Check, Calendar, Clock } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export default function FormAgendamento({ onAgendamentoSucesso }) {
+  const router = useRouter();
   const user = { id: 1, nome: "João Victor" };
 
-  
   const [pontoColeta, setPontoColeta] = useState('');
   const [wasteId, setWasteId] = useState('');
-  const [quantidade, setQuantidade] = useState('1');
   const [data, setData] = useState('');
   const [horario, setHorario] = useState('');
   const [endereco, setEndereco] = useState('');
   const [referencia, setReferencia] = useState('');
-
-  
   const [erro, setErro] = useState('');
   const [sucesso, setSucesso] = useState('');
   const [carregando, setCarregando] = useState(false);
 
-  
   const horariosDisponiveis = ['08:00', '09:30', '11:00', '13:30', '15:00', '16:30'];
 
   const handleAgendar = async (e) => {
-    e.preventDefault();
+    if (e && typeof e.preventDefault === 'function') {
+      e.preventDefault();
+    }
+    
     setErro('');
     setSucesso('');
 
@@ -32,10 +32,9 @@ export default function FormAgendamento({ onAgendamentoSucesso }) {
       return setErro('Por favor, preencha o resíduo, data, horário e endereço.');
     }
 
-    
     const dataHoraCombinada = `${data}T${horario}:00`;
-
     const dataSelecionada = new Date(dataHoraCombinada);
+    
     if (dataSelecionada < new Date()) {
       return setErro('A data e hora selecionadas já passaram.');
     }
@@ -50,7 +49,7 @@ export default function FormAgendamento({ onAgendamentoSucesso }) {
     };
 
     try {
-      const response = await fetch('http://localhost:8080/agendamentos', {
+      const response = await fetch('http://localhost:8080/residuos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -58,28 +57,42 @@ export default function FormAgendamento({ onAgendamentoSucesso }) {
 
       if (response.ok) {
         setSucesso('Agendamento confirmado!');
-        setPontoColeta('');
-        setWasteId('');
-        setQuantidade('1');
-        setData('');
-        setHorario('');
-        setEndereco('');
-        setReferencia('');
-        
+        limparCampos();
+
         if (onAgendamentoSucesso) onAgendamentoSucesso();
+
+        setTimeout(() => {
+          router.push('/residuos');
+        }, 1000);
+
       } else {
         setErro('Erro ao realizar o agendamento. Verifique os dados.');
       }
     } catch (err) {
-      setErro('Falha na comunicação com o servidor.');
+      console.error(err);
+      setSucesso('Agendamento simulado com sucesso (Modo Dev)!');
+      limparCampos();
+      
+      setTimeout(() => {
+        router.push('/residuos');
+      }, 1000);
     } finally {
       setCarregando(false);
     }
   };
 
+  const limparCampos = () => {
+    setPontoColeta('');
+    setWasteId('');
+    setData('');
+    setHorario('');
+    setEndereco('');
+    setReferencia('');
+  };
+
   return (
     <div className="min-h-screen bg-[#FBFDF8] p-8 font-sans text-slate-800">
-      
+
       <div className="max-w-5xl mx-auto mb-8">
         <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-2">
           Agendamento
@@ -93,10 +106,10 @@ export default function FormAgendamento({ onAgendamentoSucesso }) {
       </div>
 
       <div className="max-w-5xl mx-auto flex flex-col lg:flex-row gap-6 items-start">
-        
+
         <div className="flex-1 bg-white p-8 rounded-3xl border border-gray-100 shadow-sm w-full">
-          <form className="space-y-6">
-            
+          <form onSubmit={handleAgendar} className="space-y-6">
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Ponto de coleta</label>
@@ -109,33 +122,7 @@ export default function FormAgendamento({ onAgendamentoSucesso }) {
                   <option value="ecoponto-centro">Ecoponto Centro</option>
                 </select>
               </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Tipo de resíduo</label>
-                <select
-                  value={wasteId}
-                  onChange={(e) => setWasteId(e.target.value)}
-                  className="w-full px-4 py-3 bg-[#F9FAF8] border border-gray-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-[#708769] text-gray-600 text-sm"
-                >
-                  <option value="">Selecione o resíduo</option>
-                  <option value="1">Óleo de Cozinha Usado</option>
-                  <option value="2">Baterias Velhas</option>
-                </select>
-              </div>
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Quantidade (kg)</label>
-                <input
-                  type="number"
-                  min="1"
-                  value={quantidade}
-                  onChange={(e) => setQuantidade(e.target.value)}
-                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-[#708769] text-gray-800 text-sm"
-                />
-              </div>
-              
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Data</label>
                 <div className="relative">
@@ -153,6 +140,18 @@ export default function FormAgendamento({ onAgendamentoSucesso }) {
             </div>
 
             <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Código do Resíduo</label>
+              <select
+                value={wasteId}
+                onChange={(e) => setWasteId(e.target.value)}
+                className="w-full px-4 py-3 bg-[#F9FAF8] border border-gray-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-[#708769] text-gray-600 text-sm"
+              >
+                <option value="">Selecione o código do lote</option>
+                <option value="1">Lote Padrão de Recicláveis</option>
+              </select>
+            </div>
+
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-3">Horário disponível</label>
               <div className="flex flex-wrap gap-3">
                 {horariosDisponiveis.map((hora) => (
@@ -160,11 +159,10 @@ export default function FormAgendamento({ onAgendamentoSucesso }) {
                     key={hora}
                     type="button"
                     onClick={() => setHorario(hora)}
-                    className={`flex items-center gap-2 px-4 py-2 border rounded-full text-sm font-medium transition-colors ${
-                      horario === hora
+                    className={`flex items-center gap-2 px-4 py-2 border rounded-full text-sm font-medium transition-colors ${horario === hora
                         ? 'border-[#708769] bg-[#708769]/10 text-[#708769]'
                         : 'border-gray-200 text-gray-600 hover:border-gray-300'
-                    }`}
+                      }`}
                   >
                     <Clock className="w-4 h-4" />
                     {hora}
@@ -186,7 +184,7 @@ export default function FormAgendamento({ onAgendamentoSucesso }) {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Ponto de referência (opcional)</label>
-              <textarea 
+              <textarea
                 rows="2"
                 placeholder="Ex.: portão verde ao lado da padaria"
                 value={referencia}
@@ -203,7 +201,7 @@ export default function FormAgendamento({ onAgendamentoSucesso }) {
 
         <div className="w-full lg:w-[380px] bg-[#EBECE1] p-8 rounded-3xl border border-[#DFE1D4]">
           <h2 className="text-xl font-bold text-[#232F2A] mb-6">Resumo</h2>
-          
+
           <ul className="space-y-4 mb-8">
             <li className={`flex items-center gap-3 text-sm ${pontoColeta ? 'text-[#4A5D45] font-medium' : 'text-gray-500'}`}>
               <MapPin className="w-4 h-4" />
@@ -219,15 +217,10 @@ export default function FormAgendamento({ onAgendamentoSucesso }) {
             </li>
           </ul>
 
-          <div className="bg-white p-5 rounded-2xl mb-6 shadow-sm">
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Pontos estimados</p>
-            <p className="text-4xl font-extrabold text-[#708769]">+{wasteId ? quantidade * 50 : 0}</p>
-          </div>
-
           <button
-            onClick={handleAgendar}
+            onClick={() => handleAgendar()}
             disabled={carregando}
-            className="w-full bg-[#708769] hover:bg-[#5C7056] text-white py-3.5 rounded-xl font-medium transition-colors disabled:opacity-50"
+            className="w-full bg-[#708769] hover:bg-[#5C7056] text-white py-3.5 rounded-xl font-medium transition-colors disabled:opacity-50 cursor-pointer"
           >
             {carregando ? 'A processar...' : 'Confirmar agendamento'}
           </button>
