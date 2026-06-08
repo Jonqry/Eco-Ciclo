@@ -26,7 +26,6 @@ export default function PerfilPage() {
     { refreshInterval: 3000 } 
   );
 
-  // Filtro ajustado para ler tanto o DTO quanto a Entidade do Spring Boot (user.id)
   const agendamentos = todosAgendamentos.filter(ag => {
     const idDonoDoAgendamento = ag.userId || ag.user?.id;
     return usuarioLogado && String(idDonoDoAgendamento) === String(usuarioLogado.id);
@@ -94,14 +93,28 @@ export default function PerfilPage() {
   };
 
   const handleCancelarAgendamento = async (idAgendamento) => {
-    if (confirm("Deseja realmente cancelar este agendamento?")) {
-      try {
-        await fetch(`http://localhost:8080/api/agendamentos/${idAgendamento}`, { method: 'DELETE' });
+    if (!confirm("Deseja realmente cancelar este agendamento?")) return;
+
+    try {
+      const response = await fetch(`http://localhost:8080/api/agendamentos/${idAgendamento}`, {
+        method: 'DELETE',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok || response.status === 204) {
         toast.success("Agendamento cancelado!");
-        mutate(); 
-      } catch (error) {
-        toast.error("Erro ao cancelar o agendamento.");
+        mutate(); // Atualiza a lista
+      } else {
+        const text = await response.text();
+        console.error("Erro do servidor:", text);
+        toast.error("O servidor recusou a exclusão.");
       }
+    } catch (error) {
+      console.error("Erro na requisição:", error);
+      toast.error("Erro de conexão com o servidor.");
     }
   };
 
@@ -208,7 +221,7 @@ export default function PerfilPage() {
                 agendamentos.map((agendamento) => {
                   const dataAgendamento = new Date(agendamento.dataHora);
                   const isConcluido = dataAgendamento < new Date(); 
-                  const idResiduoReal = agendamento.wasteId || agendamento.wasteItem?.id; // Lê do DTO ou Entidade
+                  const idResiduoReal = agendamento.wasteId || agendamento.wasteItem?.id; 
 
                   return (
                     <div key={agendamento.id} className="p-4 rounded-2xl border border-[#f5f0e8] hover:border-[#a8c0a0]/50 transition-all bg-white shadow-sm flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
@@ -242,14 +255,13 @@ export default function PerfilPage() {
                           {isConcluido ? 'Concluído' : 'Pendente'}
                         </span>
                         
-                        {!isConcluido && (
-                          <button 
-                            onClick={() => handleCancelarAgendamento(agendamento.id)}
+                          {!isConcluido && (
+                            <button 
+                            onClick={() => handleCancelarAgendamento(agendamento.id)} 
                             className="text-red-400 hover:text-red-600 transition-colors p-1"
-                            title="Cancelar Agendamento"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
+                        >
+                       <Trash2 className="h-4 w-4" />
+                        </button>
                         )}
                       </div>
 

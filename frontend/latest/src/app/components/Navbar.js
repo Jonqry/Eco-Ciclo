@@ -28,6 +28,29 @@ export default function Navbar() {
           EcoCiclo
         </span>
       </Link>
+
+      <div className="flex items-center gap-4">
+        {!usuario ? (
+          <button
+            onClick={() => router.push('/login?aba=login')}
+            className="px-4 py-2 border border-[#a8c0a0]/40 rounded-xl text-sm font-medium text-[#1a2421] hover:bg-[#e0d9cc] transition-colors cursor-pointer"
+          >
+            Entrar
+          </button>
+        ) : (
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-gray-600 font-medium hidden sm:inline">
+              Olá, {usuario.nome || "Usuário"}
+            </span>
+            <button
+              onClick={handleLogout}
+              className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-semibold rounded-lg transition-colors cursor-pointer"
+            >
+              Sair
+            </button>
+          </div>
+        )}
+      </div>
     </nav>
   );
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation'; 
 import useSWR, { mutate as globalMutate } from 'swr';
 import { MapPin, Check, Calendar, Clock, Info, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore'; 
@@ -11,8 +12,10 @@ const fetcher = (url) => fetch(url).then((res) => {
 });
 
 export default function FormAgendamento({ onAgendamentoSucesso }) {
+  const router = useRouter(); 
   const usuarioLogado = useAuthStore((state) => state.user);
-  const atualizarSessaoLocal = useAuthStore((state) => state.login);
+  
+  const atualizarSessaoLocal = useAuthStore((state) => state.setUser || state.login);
 
   const { data: pontos = [], error: erroPontos, isLoading: carregandoPontos, mutate: mutatePontos } = useSWR(
     'http://localhost:8080/api/collection-points', 
@@ -65,7 +68,7 @@ export default function FormAgendamento({ onAgendamentoSucesso }) {
   };
 
   const handleAgendar = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     if (!usuarioLogado) return setErro("Usuário não identificado. Faça login novamente.");
     
     setErro('');
@@ -117,7 +120,10 @@ export default function FormAgendamento({ onAgendamentoSucesso }) {
           totalResiduosKg: (usuarioLogado.totalResiduosKg || 0) + Number(quantidade),
           totalPontos: (usuarioLogado.totalPontos || 0) + pontosGanhos
         };
-        atualizarSessaoLocal(usuarioAtualizado); 
+        
+        if (atualizarSessaoLocal) {
+          atualizarSessaoLocal(usuarioAtualizado); 
+        }
         
         globalMutate('http://localhost:8080/api/agendamentos');
         globalMutate('http://localhost:8080/api/collection-points'); 
@@ -167,13 +173,15 @@ export default function FormAgendamento({ onAgendamentoSucesso }) {
               </div>
               <div className="flex flex-col sm:flex-row gap-3 justify-center pt-4">
                 <button
+                  type="button"
                   onClick={handleResetarFormulario}
                   className="px-6 py-3 bg-[#708769] hover:bg-[#5C7056] text-white text-sm font-medium rounded-xl transition-colors cursor-pointer"
                 >
                   Agendar outro resíduo
                 </button>
                 <button
-                  onClick={() => window.location.href = '/profile'}
+                  type="button"
+                  onClick={() => router.push('/profile')} 
                   className="px-6 py-3 bg-[#F4F5EE] hover:bg-[#EBECE1] text-[#4A5D45] text-sm font-medium rounded-xl transition-colors cursor-pointer"
                 >
                   Ver meus agendamentos
@@ -213,23 +221,23 @@ export default function FormAgendamento({ onAgendamentoSucesso }) {
                   <label className={`block text-sm font-medium mb-2 ${campoComErro === 'residuo' ? 'text-red-500 font-semibold' : 'text-gray-700'}`}>
                     Tipo de resíduo
                   </label>
-    <select 
-      value={wasteId}
-      onChange={(e) => { setWasteId(e.target.value); if(campoComErro === 'residuo') setCampoComErro(''); }}
-       className={`w-full px-4 py-3 border rounded-xl focus:outline-none text-sm transition-all ${
-      campoComErro === 'residuo' 
-      ? 'border-red-500 ring-2 ring-red-100 bg-red-50/20 text-red-900' 
-      : wasteId
-        ? 'border-[#708769] bg-[#F4F5EE] text-gray-800 font-medium'
-        : 'border-gray-200 bg-white text-gray-400'
-  }`}
->
-    <option value="" disabled hidden>Selecione um resíduo</option>
-    <option value="1" className="text-gray-800">Óleo de Cozinha Usado (L)</option>
-    <option value="2" className="text-gray-800">Baterias Velhas (kg)</option>
-    <option value="3" className="text-gray-800">Resíduos Eletrônicos (kg)</option>    
-    <option value="4" className="text-gray-800">Papel, Vidro ou Metal (kg)</option>
-      </select>
+                  <select 
+                    value={wasteId}
+                    onChange={(e) => { setWasteId(e.target.value); if(campoComErro === 'residuo') setCampoComErro(''); }}
+                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none text-sm transition-all ${
+                      campoComErro === 'residuo' 
+                        ? 'border-red-500 ring-2 ring-red-100 bg-red-50/20 text-red-900' 
+                        : wasteId
+                          ? 'border-[#708769] bg-[#F4F5EE] text-gray-800 font-medium'
+                          : 'border-gray-200 bg-white text-gray-400'
+                    }`}
+                  >
+                    <option value="" disabled hidden>Selecione um resíduo</option>
+                    <option value="1" className="text-gray-800">Óleo de Cozinha Usado (L)</option>
+                    <option value="2" className="text-gray-800">Baterias Velhas (kg)</option>
+                    <option value="3" className="text-gray-800">Resíduos Eletrônicos (kg)</option>    
+                    <option value="4" className="text-gray-800">Papel, Vidro ou Metal (kg)</option>
+                  </select>
                 </div>
               </div>
 
@@ -353,6 +361,7 @@ export default function FormAgendamento({ onAgendamentoSucesso }) {
           </div>
 
           <button 
+            type="button"
             onClick={handleAgendar}
             disabled={carregando || sucesso}
             className="w-full bg-[#708769] hover:bg-[#5C7056] text-white py-3.5 rounded-xl font-medium transition-colors disabled:opacity-50 cursor-pointer"

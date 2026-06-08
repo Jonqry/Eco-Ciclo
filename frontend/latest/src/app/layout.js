@@ -23,7 +23,7 @@ export default function RootLayout({ children }) {
   const rotasDeAutenticacao = ['/login', '/register'];
   
   const mostraBarrasDoSistema = montado && !rotasDeAutenticacao.includes(pathname) && (pathname !== '/' || !!usuario);
-
+  
   const mostraFooter = montado && !rotasDeAutenticacao.includes(pathname);
 
   return (

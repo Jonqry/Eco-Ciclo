@@ -8,12 +8,12 @@ import { Leaf, Recycle, Calendar, Award, Flame, ShieldCheck } from "lucide-react
 
 export default function HomePage() {
   const router = useRouter();
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const usuarioLogado = useAuthStore((state) => state.user); 
 
   return (
     <div className="min-h-screen bg-[#f5f0e8] text-[#1a2421] font-sans flex flex-col">
-      
-      {!isAuthenticated && (
+
+      {!usuarioLogado && (
         <header className="w-full max-w-6xl mx-auto px-6 py-5 flex justify-end items-center">
           <button 
             onClick={() => router.push('/login')}
@@ -96,7 +96,7 @@ export default function HomePage() {
               </div>
               <div>
                 <h4 className="text-sm font-semibold">Ofensivas de Descarte</h4>
-                <p className="text-xs text-[#1a2421]/60">Ganhe medalhas virtuais mantendo sua rotina ativa semana após semana.</p>
+                <p className="text-xs text-[#1a2421]/60">Ganhe medalhas virtuais mantendo sua rotina active semana após semana.</p>
               </div>
             </div>
             <div className="flex gap-3 items-start">
@@ -114,21 +114,29 @@ export default function HomePage() {
         <div className="bg-[#cbd6c2]/30 border border-[#a8c0a0]/30 rounded-2xl p-8 grid grid-cols-2 gap-4">
           <div className="bg-white/80 border border-[#a8c0a0]/20 rounded-xl p-5 text-center">
             <Flame className="h-8 w-8 text-orange-500 mx-auto fill-current animate-pulse" />
-            <h4 className="text-xl font-bold mt-2">5 Dias</h4>
+            <h4 className="text-xl font-bold mt-2">
+              {usuarioLogado ? `${usuarioLogado.streak || 0} Dias` : '5 Dias'}
+            </h4>
             <p className="text-xs text-[#1a2421]/50">Sua Ofensiva</p>
           </div>
           <div className="bg-white/80 border border-[#a8c0a0]/20 rounded-xl p-5 text-center">
             <Award className="h-8 w-8 text-[#7d9b76] mx-auto" />
-            <h4 className="text-xl font-bold mt-2">1.250</h4>
+            <h4 className="text-xl font-bold mt-2">
+              {usuarioLogado ? (usuarioLogado.totalPontos || 0).toLocaleString() : '1.250'}
+            </h4>
             <p className="text-xs text-[#1a2421]/50">Pontos ECO</p>
           </div>
           <div className="bg-white/40 border border-[#a8c0a0]/10 rounded-xl p-4 col-span-2 text-center text-xs text-[#1a2421]/60 italic">
-            "Mais de 15kg de plástico e papelão reciclados este mês!"
+            {usuarioLogado ? (
+              `"Mais de ${usuarioLogado.totalResiduosKg || 0}kg de resíduos reciclados até agora!"`
+            ) : (
+              `"Mais de 15kg de plástico e papelão reciclados este mês!"`
+            )}
           </div>
         </div>
       </section>
 
-      {!isAuthenticated && (
+      {!usuarioLogado && (
         <section className="bg-[#7d9b76] text-[#f5f0e8] py-16 px-6 text-center">
           <div className="max-w-2xl mx-auto">
             <h2 className="font-heading text-3xl font-bold tracking-tight">Pronto para fazer parte dessa mudança?</h2>
