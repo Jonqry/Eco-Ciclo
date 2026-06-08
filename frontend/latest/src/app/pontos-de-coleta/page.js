@@ -4,7 +4,7 @@ import dynamic from 'next/dynamic';
 import useSWR from 'swr';
 import CollectionPointCard from '../components/CollectionPointCard';
 import { usePontoStore } from '../store/usePontoStore';
-import { Search, Leaf, X, Filter, Layers } from 'lucide-react';
+import { Search, Leaf, X, Filter, Layers, MapPin } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 
 const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false });
@@ -18,7 +18,7 @@ const fetcher = (url) => fetch(url).then((res) => {
 });
 
 export default function PontosDeColetaPage() {
-  // Puxando os novos estados de posição e zoom do Zustand
+  
   const { 
     searchTerm, 
     setSearchTerm, 
@@ -55,7 +55,6 @@ export default function PontosDeColetaPage() {
     });
   }, []);
 
-  // Adiciona escutadores na instância do mapa para salvar a posição atual no Zustand
   useEffect(() => {
     if (!map) return;
 
@@ -65,7 +64,6 @@ export default function PontosDeColetaPage() {
       setMapPosition([centro.lat, centro.lng], zoom);
     };
 
-    // Toda vez que o usuário arrastar ou der zoom, salva no Zustand
     map.on('moveend', salvarPosicaoAtual);
     map.on('zoomend', salvarPosicaoAtual);
 
@@ -79,7 +77,6 @@ export default function PontosDeColetaPage() {
     setPontoSelecionadoId(id);
     if (map) {
       map.flyTo([lat, lng], 15);
-      // Salva imediatamente no Zustand a nova posição do clique
       setMapPosition([lat, lng], 15);
     }
   };
@@ -94,12 +91,12 @@ export default function PontosDeColetaPage() {
 
   return (
     <div className="relative w-full h-screen bg-white font-sans overflow-hidden">
-      
-      {/* MAPA EM TELA CHEIA */}
+    
+      {/* MAPA */}
       <div className="absolute inset-0 z-0">
         <MapContainer 
-          center={mapCenter}  // <--- Agora consome do Zustand dinamicamente
-          zoom={mapZoom}      // <--- Agora consome do Zustand dinamicamente
+          center={mapCenter}
+          zoom={mapZoom}
           style={{ height: '100%', width: '100%' }}
           ref={setMap}
         >
@@ -111,12 +108,26 @@ export default function PontosDeColetaPage() {
           {pontos.map(ponto => (
             <Marker key={ponto.id} position={[ponto.latitude, ponto.longitude]}>
               <Popup className="custom-popup">
-                <div className="p-2 min-w-[150px]">
-                  <h4 className="font-bold text-slate-900 m-0 text-sm">{ponto.nomeUnidade}</h4>
-                  <p className="text-[10px] text-slate-500 m-0 mb-2">{ponto.endereco}</p>
-                  <div className="flex flex-wrap gap-1">
+                <div className="p-2 min-w-[180px] max-w-[240px] space-y-1.5">
+                  <h4 className="font-bold text-slate-900 m-0 text-sm tracking-tight">
+                    {ponto.nomeUnidade}
+                  </h4>
+                  
+                  <p className="text-[10px] text-slate-600 m-0 leading-relaxed">
+                    {ponto.endereco}
+                  </p>
+
+                  {/* EXIBIÇÃO DO PONTO DE REFERÊNCIA */}
+                  {ponto.pontoReferencia && (
+                    <p className="text-[10px] text-slate-400 m-0 italic bg-slate-50 p-1.5 rounded-lg border border-slate-100">
+                      <span className="font-semibold not-italic text-slate-500 block text-[9px] uppercase tracking-wider mb-0.5">Ref:</span>
+                      "{ponto.pontoReferencia}"
+                    </p>
+                  )}
+                  
+                  <div className="flex flex-wrap gap-1 pt-1.5 border-t border-slate-100">
                     {ponto.tiposResiduosAceitos.split(',').map((t, i) => (
-                      <span key={i} className="text-[8px] bg-slate-100 text-[#7fa17e] px-1.5 py-0.5 rounded font-black uppercase">
+                      <span key={i} className="text-[8px] bg-slate-100 text-[#7fa17e] px-1.5 py-0.5 rounded font-black uppercase tracking-wide">
                         {t.trim()}
                       </span>
                     ))}
@@ -128,7 +139,7 @@ export default function PontosDeColetaPage() {
         </MapContainer>
       </div>
 
-      {/* BARRA LATERAL FLUTUANTE */}
+      {/* PAINEL LATERAL ESQUERDO */}
       <aside className="absolute top-4 left-4 bottom-4 w-full max-w-[420px] z-[1000] flex flex-col pointer-events-none">
         <div className="bg-white/95 backdrop-blur-sm rounded-[32px] shadow-2xl shadow-slate-900/10 flex flex-col h-full pointer-events-auto overflow-hidden border border-white/50">
           
@@ -172,7 +183,7 @@ export default function PontosDeColetaPage() {
             </div>
           </div>
 
-          {/* Lista de Cards */}
+          {/* Listagem de Cards */}
           <div className="flex-1 overflow-y-auto px-6 pb-6 custom-scrollbar">
             <div className="flex justify-between items-center mb-4 px-1">
               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Unidades de Coleta</span>
@@ -204,7 +215,7 @@ export default function PontosDeColetaPage() {
             )}
           </div>
 
-          {/* Footer Informativo */}
+          {/* Rodapé */}
           <div className="p-6 bg-slate-50/50 border-t border-slate-100 flex items-center justify-between">
             <button className="flex items-center gap-2 text-[11px] font-black text-[#7fa17e] uppercase tracking-widest hover:opacity-80 transition-colors">
               <Filter size={14} /> Refinar Busca

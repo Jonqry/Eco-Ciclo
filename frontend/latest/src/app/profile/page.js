@@ -2,9 +2,15 @@
 
 import * as React from "react";
 import { useState, useEffect } from "react";
-import { User, Mail, Shield, Flame, Recycle, Award, MapPin } from "lucide-react";
+import { User, Mail, Flame, Recycle, Award, MapPin, CalendarClock, Clock, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuthStore } from "../../store/useAuthStore"; 
+import useSWR from 'swr';
+
+const fetcher = (url) => fetch(url).then((res) => {
+  if (!res.ok) throw new Error('Erro ao buscar dados');
+  return res.json();
+});
 
 export default function PerfilPage() {
   const usuarioLogado = useAuthStore((state) => state.user);
@@ -14,9 +20,30 @@ export default function PerfilPage() {
   const [nomeForm, setNomeForm] = useState("");
   const [cidadeForm, setCidadeForm] = useState("Recife - PE");
 
+  const { data: todosAgendamentos = [], mutate } = useSWR(
+    'http://localhost:8080/api/agendamentos',
+    fetcher,
+    { refreshInterval: 3000 } 
+  );
+
+  // Filtro ajustado para ler tanto o DTO quanto a Entidade do Spring Boot (user.id)
+  const agendamentos = todosAgendamentos.filter(ag => {
+    const idDonoDoAgendamento = ag.userId || ag.user?.id;
+    return usuarioLogado && String(idDonoDoAgendamento) === String(usuarioLogado.id);
+  });
+
+  const formatarNome = (txt) => {
+    if (!txt) return "";
+    return txt
+      .toLowerCase()
+      .split(" ")
+      .map(palavra => palavra.charAt(0).toUpperCase() + palavra.slice(1))
+      .join(" ");
+  };
+
   useEffect(() => {
     if (usuarioLogado) {
-      setNomeForm(usuarioLogado.nome || "");
+      setNomeForm(formatarNome(usuarioLogado.nome) || "");
     }
   }, [usuarioLogado]);
 
@@ -30,11 +57,8 @@ export default function PerfilPage() {
 
   const handleSalvarPerfil = async (e) => {
     e.preventDefault();
-
-    const usuarioAtualizado = {
-      ...usuarioLogado,
-      nome: nomeForm
-    };
+    const nomeCorrigido = formatarNome(nomeForm);
+    const usuarioAtualizado = { ...usuarioLogado, nome: nomeCorrigido };
 
     try {
       const response = await fetch(`http://localhost:8080/api/usuarios/${usuarioLogado.id}`, {
@@ -45,9 +69,8 @@ export default function PerfilPage() {
 
       if (response.ok) {
         const dadosDoServidor = await response.json();
-
+        dadosDoServidor.nome = formatarNome(dadosDoServidor.nome);
         atualizarSessaoLocal(dadosDoServidor);
-
         toast.success("Informações cadastrais atualizadas com sucesso!");
         setEditando(false);
       } else {
@@ -61,94 +84,184 @@ export default function PerfilPage() {
     }
   };
 
+  const getNomeResiduo = (id) => {
+    switch(String(id)) {
+      case '1': return "Óleo de Cozinha Usado";
+      case '2': return "Baterias Velhas";
+      case '3': return "Resíduos Eletrônicos";
+      default: return "Resíduo a classificar";
+    }
+  };
+
+  const handleCancelarAgendamento = async (idAgendamento) => {
+    if (confirm("Deseja realmente cancelar este agendamento?")) {
+      try {
+        await fetch(`http://localhost:8080/api/agendamentos/${idAgendamento}`, { method: 'DELETE' });
+        toast.success("Agendamento cancelado!");
+        mutate(); 
+      } catch (error) {
+        toast.error("Erro ao cancelar o agendamento.");
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#f5f0e8] p-6 md:p-12 font-sans text-[#1a2421]">
-      
       <div className="max-w-5xl mx-auto mb-8">
         <span className="text-xs font-semibold text-[#7d9b76] uppercase tracking-widest block mb-2">
           Área do Usuário
         </span>
-        <h1 className="text-4xl font-extrabold font-heading">Olá, {usuarioLogado.nome}!</h1>
+        <h1 className="text-4xl font-extrabold font-heading text-[#1a2421]">
+          Olá, {formatarNome(usuarioLogado.nome)}!
+        </h1>
       </div>
 
       <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-        
-        <div className="lg:col-span-2 bg-white border border-[#a8c0a0]/15 rounded-3xl p-8 shadow-sm">
-          <h2 className="text-xl font-bold font-heading mb-6 flex items-center gap-2 pb-2 border-b border-[#f5f0e8]">
-            <User className="h-5 w-5 text-[#7d9b76]" /> Informações da Conta
-          </h2>
+        <div className="lg:col-span-2 space-y-8">
+          <div className="bg-white border border-[#a8c0a0]/15 rounded-3xl p-8 shadow-sm">
+            <h2 className="text-xl font-bold font-heading mb-6 flex items-center gap-2 pb-2 border-b border-[#f5f0e8]">
+              <User className="h-5 w-5 text-[#7d9b76]" /> Informações da Conta
+            </h2>
 
-          <form onSubmit={handleSalvarPerfil} className="space-y-5">
-            <div>
-              <label className="block text-xs font-bold text-[#1a2421]/60 uppercase mb-2">Nome Completo</label>
-              <input
-                type="text"
-                value={nomeForm}
-                disabled={!editando}
-                onChange={(e) => setNomeForm(e.target.value)}
-                className="w-full px-4 py-3 bg-[#f5f0e8]/30 border border-[#a8c0a0]/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#7d9b76] text-sm text-[#1a2421] disabled:opacity-60 transition-all"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-[#1a2421]/60 uppercase mb-2">Endereço de E-mail</label>
-              <div className="relative">
-                <Mail className="absolute left-4 top-3.5 h-4 w-4 text-[#1a2421]/40" />
-                <input
-                  type="email"
-                  value={usuarioLogado.email || "não informado"} 
-                  disabled
-                  className="w-full pl-11 pr-4 py-3 bg-[#f5f0e8]/10 border border-gray-200 rounded-xl text-sm text-[#1a2421]/50 cursor-not-allowed"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-[#1a2421]/60 uppercase mb-2">Localidade Base</label>
-              <div className="relative">
-                <MapPin className="absolute left-4 top-3.5 h-4 w-4 text-[#7d9b76]" />
+            <form onSubmit={handleSalvarPerfil} className="space-y-5">
+              <div>
+                <label className="block text-xs font-bold text-[#1a2421]/60 uppercase mb-2">Nome Completo</label>
                 <input
                   type="text"
-                  value={cidadeForm}
+                  value={nomeForm}
                   disabled={!editando}
-                  onChange={(e) => setCidadeForm(e.target.value)}
-                  className="w-full pl-11 pr-4 py-3 bg-[#f5f0e8]/30 border border-[#a8c0a0]/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#7d9b76] text-sm text-[#1a2421] disabled:opacity-60 transition-all"
+                  onChange={(e) => setNomeForm(e.target.value)}
+                  className="w-full px-4 py-3 bg-[#f5f0e8]/30 border border-[#a8c0a0]/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#7d9b76] text-sm text-[#1a2421] disabled:opacity-60 transition-all"
                 />
               </div>
-            </div>
 
-            <div className="pt-4 flex justify-end gap-3">
-              {editando ? (
-                <>
+              <div>
+                <label className="block text-xs font-bold text-[#1a2421]/60 uppercase mb-2">Endereço de E-mail</label>
+                <div className="relative">
+                  <Mail className="absolute left-4 top-3.5 h-4 w-4 text-[#1a2421]/40" />
+                  <input
+                    type="email"
+                    value={usuarioLogado.email || "não informado"} 
+                    disabled
+                    className="w-full pl-11 pr-4 py-3 bg-[#f5f0e8]/10 border border-gray-200 rounded-xl text-sm text-[#1a2421]/50 cursor-not-allowed"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-[#1a2421]/60 uppercase mb-2">Localidade Base</label>
+                <div className="relative">
+                  <MapPin className="absolute left-4 top-3.5 h-4 w-4 text-[#7d9b76]" />
+                  <input
+                    type="text"
+                    value={cidadeForm}
+                    disabled={!editando}
+                    onChange={(e) => setCidadeForm(e.target.value)}
+                    className="w-full pl-11 pr-4 py-3 bg-[#f5f0e8]/30 border border-[#a8c0a0]/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#7d9b76] text-sm text-[#1a2421] disabled:opacity-60 transition-all"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-4 flex justify-end gap-3">
+                {editando ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => { setEditando(false); setNomeForm(formatarNome(usuarioLogado.nome) || ""); }}
+                      className="px-5 py-2.5 rounded-xl text-xs font-semibold border border-gray-300 text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-5 py-2.5 rounded-xl text-xs font-bold bg-[#7d9b76] text-[#f5f0e8] hover:bg-[#6c8866] transition-colors shadow-sm cursor-pointer"
+                    >
+                      Salvar Alterações
+                    </button>
+                  </>
+                ) : (
                   <button
                     type="button"
-                    onClick={() => { setEditando(false); setNomeForm(usuarioLogado.nome || ""); }}
-                    className="px-5 py-2.5 rounded-xl text-xs font-semibold border border-gray-300 text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer"
+                    onClick={() => setEditando(true)}
+                    className="px-5 py-2.5 rounded-xl text-xs font-semibold border border-[#a8c0a0] text-[#7d9b76] hover:bg-[#dce5d4]/40 transition-all cursor-pointer"
                   >
-                    Cancelar
+                    Editar Perfil
                   </button>
-                  <button
-                    type="submit"
-                    className="px-5 py-2.5 rounded-xl text-xs font-bold bg-[#7d9b76] text-[#f5f0e8] hover:bg-[#6c8866] transition-colors shadow-sm cursor-pointer"
-                  >
-                    Salvar Alterações
-                  </button>
-                </>
+                )}
+              </div>
+            </form>
+          </div>
+
+          <div className="bg-white border border-[#a8c0a0]/15 rounded-3xl p-8 shadow-sm">
+            <div className="flex items-center justify-between pb-2 border-b border-[#f5f0e8] mb-6">
+              <h2 className="text-xl font-bold font-heading flex items-center gap-2">
+                <CalendarClock className="h-5 w-5 text-[#7d9b76]" /> Meus Agendamentos
+              </h2>
+            </div>
+
+            <div className="space-y-4">
+              {agendamentos.length === 0 ? (
+                <div className="text-center py-8 text-gray-400 bg-[#f5f0e8]/30 rounded-2xl border border-dashed border-[#a8c0a0]/50">
+                  <p className="text-sm">Você ainda não tem coletas agendadas.</p>
+                </div>
               ) : (
-                <button
-                  type="button"
-                  onClick={() => setEditando(true)}
-                  className="px-5 py-2.5 rounded-xl text-xs font-semibold border border-[#a8c0a0] text-[#7d9b76] hover:bg-[#dce5d4]/40 transition-all cursor-pointer"
-                >
-                  Editar Perfil
-                </button>
+                agendamentos.map((agendamento) => {
+                  const dataAgendamento = new Date(agendamento.dataHora);
+                  const isConcluido = dataAgendamento < new Date(); 
+                  const idResiduoReal = agendamento.wasteId || agendamento.wasteItem?.id; // Lê do DTO ou Entidade
+
+                  return (
+                    <div key={agendamento.id} className="p-4 rounded-2xl border border-[#f5f0e8] hover:border-[#a8c0a0]/50 transition-all bg-white shadow-sm flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+                      
+                      <div className="flex items-start gap-4">
+                        <div className={`p-3 rounded-xl flex-shrink-0 ${isConcluido ? 'bg-[#f5f0e8] text-gray-400' : 'bg-[#dce5d4] text-[#7d9b76]'}`}>
+                          <Recycle className="h-6 w-6" />
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-[#1a2421] text-sm">
+                            {getNomeResiduo(idResiduoReal)} ({agendamento.quantidade || 0} {String(idResiduoReal) === '1' ? 'L' : 'kg'})
+                          </h4>
+                          <div className="flex flex-col gap-1 mt-1">
+                            <span className="text-xs text-gray-500 flex items-center gap-1.5">
+                              <MapPin className="h-3 w-3" /> {agendamento.enderecoColeta}
+                            </span>
+                            <span className="text-xs text-gray-500 flex items-center gap-1.5">
+                              <Clock className="h-3 w-3" /> 
+                              {dataAgendamento.toLocaleDateString('pt-BR')} às {dataAgendamento.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between w-full sm:w-auto gap-4 sm:flex-col sm:items-end">
+                        <span className={`px-3 py-1 text-[10px] uppercase tracking-wider font-bold rounded-full ${
+                          isConcluido 
+                            ? 'bg-gray-100 text-gray-500' 
+                            : 'bg-orange-100 text-orange-600'
+                        }`}>
+                          {isConcluido ? 'Concluído' : 'Pendente'}
+                        </span>
+                        
+                        {!isConcluido && (
+                          <button 
+                            onClick={() => handleCancelarAgendamento(agendamento.id)}
+                            className="text-red-400 hover:text-red-600 transition-colors p-1"
+                            title="Cancelar Agendamento"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        )}
+                      </div>
+
+                    </div>
+                  );
+                })
               )}
             </div>
-          </form>
+          </div>
         </div>
 
-        <div className="space-y-6 w-full">
-          
+        <div className="space-y-6 w-full lg:sticky lg:top-6">
           <div className="bg-gradient-to-br from-[#7d9b76] to-[#6c8866] rounded-3xl p-6 text-[#f5f0e8] shadow-sm flex flex-col justify-between min-h-[160px]">
             <div className="flex justify-between items-start">
               <div>
@@ -176,7 +289,7 @@ export default function PerfilPage() {
               <div>
                 <span className="text-xs text-[#1a2421]/60 block leading-none">Total reciclado</span>
                 <strong className="text-base text-[#1a2421]">
-                  {usuarioLogado.totalResiduosKg || 0} kg
+                  {usuarioLogado.totalResiduosKg || 0} kg/L
                 </strong>
               </div>
             </div>
@@ -192,12 +305,7 @@ export default function PerfilPage() {
                 </strong>
               </div>
             </div>
-
-            <div className="pt-2 text-[11px] text-[#1a2421]/40 border-t border-[#f5f0e8] text-center">
-              Membro participante ativo do EcoCiclo.
-            </div>
           </div>
-
         </div>
 
       </div>

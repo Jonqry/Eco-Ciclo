@@ -7,7 +7,7 @@ const CollectionPointCard = ({ point, onSelect }) => {
   const getProgressColor = (percent) => {
     if (percent > 90) return 'bg-rose-500';
     if (percent > 75) return 'bg-amber-400';
-    return 'bg-[#7fa17e]'; // Mudou de bg-emerald-500 para o verde oliva
+    return 'bg-[#7fa17e]';
   };
 
   const residuosTags = point.tiposResiduosAceitos.split(',').map(tag => tag.trim());
@@ -42,7 +42,6 @@ const CollectionPointCard = ({ point, onSelect }) => {
         </div>
       </div>
 
-      {/* Tags de Resíduos (Convertidas para o novo verde oliva) */}
       <div className="flex flex-wrap gap-1.5 mb-5">
         {residuosTags.map((tag, i) => (
           <span 
@@ -54,7 +53,6 @@ const CollectionPointCard = ({ point, onSelect }) => {
         ))}
       </div>
 
-      {/* Barra de Capacidade */}
       <div className="space-y-2 bg-slate-50 p-3 rounded-xl border border-slate-100">
         <div className="flex justify-between items-center text-[11px]">
           <span className="text-slate-500 font-bold uppercase tracking-tighter flex items-center gap-1">

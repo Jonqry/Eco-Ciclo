@@ -24,7 +24,7 @@ export default function Sidebar() {
   const handleLogout = () => {
     logoutGlobal();
     toast.success("Sessão encerrada com sucesso.");
-    router.push("/login");
+    router.push("/"); // 🚀 CORRIGIDO: Agora redireciona para a página inicial pública
   };
 
   const menuItems = [

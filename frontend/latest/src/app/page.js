@@ -2,12 +2,32 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Leaf, Recycle, Calendar, Award, Flame, ArrowRight, ShieldCheck } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useAuthStore } from "../store/useAuthStore";
+import { Leaf, Recycle, Calendar, Award, Flame, ShieldCheck } from "lucide-react";
 
 export default function HomePage() {
+  const router = useRouter();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+
   return (
-    <div className="min-h-screen bg-[#f5f0e8] text-[#1a2421] font-sans">
+    <div className="min-h-screen bg-[#f5f0e8] text-[#1a2421] font-sans flex flex-col">
       
+      {/* ========================================================
+          BOTÃO DE LOGIN NO TOPO DIREITO (Apenas se NÃO estiver logado)
+         ======================================================== */}
+      {!isAuthenticated && (
+        <header className="w-full max-w-6xl mx-auto px-6 py-5 flex justify-end items-center">
+          <button 
+            onClick={() => router.push('/login')}
+            className="px-5 py-2.5 rounded-xl text-xs font-bold border-2 border-[#7d9b76] text-[#7d9b76] hover:bg-[#7d9b76] hover:text-[#f5f0e8] transition-all cursor-pointer shadow-sm"
+          >
+            Entrar (Login)
+          </button>
+        </header>
+      )}
+      
+      {/* SEÇÃO HERO ORIGINIAL */}
       <section className="relative px-6 py-20 md:py-32 max-w-6xl mx-auto flex flex-col items-center text-center">
         <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#7d9b76]/10 text-[#7d9b76] text-xs font-semibold mb-6 border border-[#7d9b76]/20">
           <Leaf className="h-3.5 w-3.5" /> Ciclos completos, gestos simples.
@@ -20,9 +40,9 @@ export default function HomePage() {
         <p className="mt-6 text-base md:text-xl text-[#1a2421]/70 max-w-2xl leading-relaxed">
           O EcoCiclo ajuda você a gerenciar sua reciclagem doméstica, agendar coletas eficientes, acumular pontos ECO e manter hábitos sustentáveis com pontuações diárias.
         </p>
-      
       </section>
 
+      {/* SEÇÃO COMO FUNCIONA ORIGINAL */}
       <section className="bg-[#dce5d4]/40 border-y border-[#a8c0a0]/20 py-20 px-6">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
@@ -64,6 +84,7 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* SEÇÃO GAMIFICAÇÃO ORIGINAL */}
       <section className="py-20 px-6 max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
         <div>
           <span className="text-xs font-bold uppercase tracking-wider text-[#7d9b76]">Gamificação Sustentável</span>
@@ -71,7 +92,7 @@ export default function HomePage() {
             Mantenha sua ofensiva e multiplique seu impacto
           </h2>
           <p className="mt-4 text-sm text-[#1a2421]/70 leading-relaxed">
-            Criar um hábito sustentável exige consistência. Com a nossa mecânica de **Ofensivas (Streaks)**, realizar descartes periódicos mantém seu contador ativo, provando seu compromisso de longo prazo com o ecossistema.
+            Criar um hábito sustentável exige consistência. Com a nossa mecânica de <strong>Ofensivas (Streaks)</strong>, realizar descartes periódicos mantém seu contador ativo, provando seu compromisso de longo prazo com o ecossistema.
           </p>
 
           <div className="mt-6 space-y-4">
@@ -113,22 +134,27 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="bg-[#7d9b76] text-[#f5f0e8] py-16 px-6 text-center">
-        <div className="max-w-2xl mx-auto">
-          <h2 className="font-heading text-3xl font-bold tracking-tight">Pronto para fazer parte dessa mudança?</h2>
-          <p className="mt-4 text-[#f5f0e8]/80 text-sm leading-relaxed">
-            Crie sua conta agora mesmo, ganhe seus primeiros pontos de boas-vindas e agende sua primeira coleta seletiva ainda hoje.
-          </p>
-          <div className="mt-8">
-            <Link 
-              href="/register" 
-              className="inline-flex items-center justify-center h-12 px-8 rounded-xl text-sm font-semibold bg-[#f5f0e8] text-[#7d9b76] shadow-sm hover:bg-[#eadecc] transition-colors"
-            >
-              Cadastrar Gratuitamente
-            </Link>
+      {/* ========================================================
+          SEÇÃO FINAL DE CADASTRO (Só aparece se NÃO estiver logado)
+         ======================================================== */}
+      {!isAuthenticated && (
+        <section className="bg-[#7d9b76] text-[#f5f0e8] py-16 px-6 text-center">
+          <div className="max-w-2xl mx-auto">
+            <h2 className="font-heading text-3xl font-bold tracking-tight">Pronto para fazer parte dessa mudança?</h2>
+            <p className="mt-4 text-[#f5f0e8]/80 text-sm leading-relaxed">
+              Crie sua conta agora mesmo, ganhe seus primeiros pontos de boas-vindas e agende sua primeira coleta seletiva ainda hoje.
+            </p>
+            <div className="mt-8">
+              <Link 
+                href="/register" 
+                className="inline-flex items-center justify-center h-12 px-8 rounded-xl text-sm font-semibold bg-[#f5f0e8] text-[#7d9b76] shadow-sm hover:bg-[#eadecc] transition-colors"
+              >
+                Cadastrar Gratuitamente
+              </Link>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
       
     </div>
   );

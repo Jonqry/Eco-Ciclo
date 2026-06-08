@@ -13,6 +13,15 @@ export default function RegisterPage() {
   const [erro, setErro] = useState('');
   const [carregando, setCarregando] = useState(false);
 
+  // 1. Estado para controlar o tremor do formulário
+  const [erroShake, setErroShake] = useState(false);
+
+  // Função auxiliar para ativar o tremor por 400ms
+  const dispararTremor = () => {
+    setErroShake(true);
+    setTimeout(() => setErroShake(false), 400);
+  };
+
   const handleRegister = async (e) => {
     e.preventDefault();
     setErro('');
@@ -27,13 +36,14 @@ export default function RegisterPage() {
 
       if (response.ok) {
         alert('Conta criada com sucesso!');
-        
         router.push('/login');
       } else {
         setErro('Erro ao registrar. Verifique os dados ou tente outro e-mail.');
+        dispararTremor(); // 2. Ativa o tremor se a API recusar o cadastro
       }
     } catch (err) {
       setErro('Falha na comunicação com o servidor. Registrando localmente para teste...');
+      dispararTremor(); // 3. Ativa o tremor se houver erro de conexão antes de simular
       
       setTimeout(() => {
         alert('Conta criada com sucesso! (Modo Simulação)');
@@ -46,7 +56,13 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen bg-[#f5f0e8] flex items-center justify-center p-6 text-[#1a2421]">
-      <div className="w-full max-w-md bg-white p-8 rounded-3xl border border-[#a8c0a0]/20 shadow-sm">
+      
+      {/* 4. Injetando a classe do Tailwind v4 de forma reativa para tremer o card */}
+      <div className={`w-full max-w-md bg-white p-8 rounded-3xl border shadow-sm transition-all duration-300 ${
+        erroShake 
+          ? 'animate-shake border-red-400 shadow-md shadow-red-100/50' 
+          : 'border-[#a8c0a0]/20'
+      }`}>
         
         <div className="flex flex-col items-center mb-6">
           <div className="h-12 w-12 rounded-xl bg-[#7d9b76] text-[#f5f0e8] flex items-center justify-center mb-3">
