@@ -92,7 +92,6 @@ export default function PontosDeColetaPage() {
   return (
     <div className="relative w-full h-screen bg-white font-sans overflow-hidden">
     
-      {/* MAPA */}
       <div className="absolute inset-0 z-0">
         <MapContainer 
           center={mapCenter}
@@ -117,7 +116,6 @@ export default function PontosDeColetaPage() {
                     {ponto.endereco}
                   </p>
 
-                  {/* EXIBIÇÃO DO PONTO DE REFERÊNCIA */}
                   {ponto.pontoReferencia && (
                     <p className="text-[10px] text-slate-400 m-0 italic bg-slate-50 p-1.5 rounded-lg border border-slate-100">
                       <span className="font-semibold not-italic text-slate-500 block text-[9px] uppercase tracking-wider mb-0.5">Ref:</span>
@@ -139,11 +137,9 @@ export default function PontosDeColetaPage() {
         </MapContainer>
       </div>
 
-      {/* PAINEL LATERAL ESQUERDO */}
       <aside className="absolute top-4 left-4 bottom-4 w-full max-w-[420px] z-[1000] flex flex-col pointer-events-none">
         <div className="bg-white/95 backdrop-blur-sm rounded-[32px] shadow-2xl shadow-slate-900/10 flex flex-col h-full pointer-events-auto overflow-hidden border border-white/50">
-          
-          {/* Header */}
+
           <div className="p-8 pb-6">
             <div className="flex items-center justify-between mb-6">
               <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
@@ -183,7 +179,6 @@ export default function PontosDeColetaPage() {
             </div>
           </div>
 
-          {/* Listagem de Cards */}
           <div className="flex-1 overflow-y-auto px-6 pb-6 custom-scrollbar">
             <div className="flex justify-between items-center mb-4 px-1">
               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Unidades de Coleta</span>
@@ -215,7 +210,6 @@ export default function PontosDeColetaPage() {
             )}
           </div>
 
-          {/* Rodapé */}
           <div className="p-6 bg-slate-50/50 border-t border-slate-100 flex items-center justify-between">
             <button className="flex items-center gap-2 text-[11px] font-black text-[#7fa17e] uppercase tracking-widest hover:opacity-80 transition-colors">
               <Filter size={14} /> Refinar Busca

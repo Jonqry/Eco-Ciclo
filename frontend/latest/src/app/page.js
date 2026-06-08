@@ -13,9 +13,6 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-[#f5f0e8] text-[#1a2421] font-sans flex flex-col">
       
-      {/* ========================================================
-          BOTÃO DE LOGIN NO TOPO DIREITO (Apenas se NÃO estiver logado)
-         ======================================================== */}
       {!isAuthenticated && (
         <header className="w-full max-w-6xl mx-auto px-6 py-5 flex justify-end items-center">
           <button 
@@ -27,7 +24,6 @@ export default function HomePage() {
         </header>
       )}
       
-      {/* SEÇÃO HERO ORIGINIAL */}
       <section className="relative px-6 py-20 md:py-32 max-w-6xl mx-auto flex flex-col items-center text-center">
         <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#7d9b76]/10 text-[#7d9b76] text-xs font-semibold mb-6 border border-[#7d9b76]/20">
           <Leaf className="h-3.5 w-3.5" /> Ciclos completos, gestos simples.
@@ -42,7 +38,6 @@ export default function HomePage() {
         </p>
       </section>
 
-      {/* SEÇÃO COMO FUNCIONA ORIGINAL */}
       <section className="bg-[#dce5d4]/40 border-y border-[#a8c0a0]/20 py-20 px-6">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
@@ -84,7 +79,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* SEÇÃO GAMIFICAÇÃO ORIGINAL */}
       <section className="py-20 px-6 max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
         <div>
           <span className="text-xs font-bold uppercase tracking-wider text-[#7d9b76]">Gamificação Sustentável</span>
@@ -134,9 +128,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ========================================================
-          SEÇÃO FINAL DE CADASTRO (Só aparece se NÃO estiver logado)
-         ======================================================== */}
       {!isAuthenticated && (
         <section className="bg-[#7d9b76] text-[#f5f0e8] py-16 px-6 text-center">
           <div className="max-w-2xl mx-auto">

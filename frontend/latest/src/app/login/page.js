@@ -15,10 +15,8 @@ export default function LoginPage() {
   const [erro, setErro] = useState('');
   const [carregando, setCarregando] = useState(false);
   
-  // 1. Estado para controlar o tremor do formulário
   const [erroShake, setErroShake] = useState(false);
 
-  // Função para ativar o tremor e limpá-lo logo em seguida (400ms)
   const dispararTremor = () => {
     setErroShake(true);
     setTimeout(() => setErroShake(false), 400);
@@ -42,12 +40,12 @@ export default function LoginPage() {
         router.push('/profile');
       } else {
         setErro('E-mail ou senha incorretos.');
-        dispararTremor(); // 2. Ativa o tremor em credenciais erradas
+        dispararTremor(); 
       }
     } catch (err) {
       console.error("Erro na requisição:", err);
       setErro('Não foi possível conectar ao servidor.');
-      dispararTremor(); // 2. Ativa o tremor em falhas de conexão
+      dispararTremor(); 
     } finally {
       setCarregando(false);
     }
@@ -55,8 +53,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-[#f5f0e8] flex items-center justify-center p-6 text-[#1a2421]">
-      
-      {/* 3. Injetando a classe do Tailwind v4 de forma condicional para fazer o card tremer */}
+
       <div className={`w-full max-w-md bg-white p-8 rounded-3xl border shadow-sm transition-all duration-300 ${
         erroShake 
           ? 'animate-shake border-red-400 shadow-md shadow-red-100/50' 
