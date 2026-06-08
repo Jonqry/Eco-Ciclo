@@ -17,7 +17,6 @@ const CollectionPointCard = ({ point, onSelect }) => {
       className="bg-white rounded-2xl border border-slate-100 p-5 mb-4 transition-all duration-300 hover:border-[#7fa17e]/30 hover:shadow-xl hover:shadow-[#7fa17e]/10 cursor-pointer group relative overflow-hidden"
       onClick={() => onSelect && onSelect(point.id)}
     >
-      {/* Indicador de Status Lateral */}
       <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${getProgressColor(ocupacaoPercent)} opacity-80`} />
 
       <div className="flex justify-between items-start mb-3">

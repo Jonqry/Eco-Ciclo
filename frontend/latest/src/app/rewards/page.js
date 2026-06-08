@@ -73,7 +73,6 @@ export default function RecompensasPage() {
     }
   };
 
-  // Função para consumir e remover o cupom da tela na hora
   const handleUsarCupom = (idResgate, titulo) => {
     setMeusCupons((prev) => prev.filter(cupom => cupom.idResgate !== idResgate));
     toast.success(`Cupom "${titulo}" aplicado e utilizado com sucesso!`);
@@ -82,7 +81,6 @@ export default function RecompensasPage() {
   return (
     <div className="min-h-screen bg-[#f5f0e8] p-6 md:p-12 font-sans text-[#1a2421]">
 
-      {/* CABEÇALHO */}
       <div className="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
         <div>
           <span className="text-xs font-semibold text-[#7d9b76] uppercase tracking-widest block mb-2">
@@ -94,7 +92,6 @@ export default function RecompensasPage() {
           </p>
         </div>
 
-        {/* SALDO DE PONTOS */}
         <div className="bg-white border border-[#a8c0a0]/30 rounded-2xl p-4 flex items-center gap-4 shadow-sm min-w-[240px]">
           <div className="h-12 w-12 rounded-xl bg-[#7d9b76]/10 flex items-center justify-center text-[#7d9b76]">
             <Award className="h-6 w-6" />
@@ -108,7 +105,6 @@ export default function RecompensasPage() {
 
       <div className="max-w-5xl mx-auto space-y-12">
         
-        {/* VITRINE DE PRÊMIOS (CIMA) */}
         <div>
           <h2 className="text-xl font-bold text-[#1a2421] mb-6 flex items-center gap-2">
             <ShoppingBag className="w-5 h-5 text-[#7d9b76]" /> Benefícios para Troca
@@ -160,7 +156,6 @@ export default function RecompensasPage() {
           </div>
         </div>
 
-        {/* MINHAS RECOMPENSAS RESGATADAS (BAIXO) */}
         <div className="pt-4 border-t border-[#a8c0a0]/20">
           <h2 className="text-xl font-bold text-[#1a2421] mb-6 flex items-center gap-2">
             <CheckCircle className="w-5 h-5 text-[#7d9b76]" /> Minhas Recompensas ({meusCupons.length})

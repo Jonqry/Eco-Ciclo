@@ -119,10 +119,9 @@ export default function FormAgendamento({ onAgendamentoSucesso }) {
         };
         atualizarSessaoLocal(usuarioAtualizado); 
         
-        // Força a atualização de todas as rotas relevantes do sistema
         globalMutate('http://localhost:8080/api/agendamentos');
-        globalMutate('http://localhost:8080/api/collection-points'); // Atualiza a aba de Pontos de Coleta
-        mutatePontos(); // Atualiza os pontos de coleta na tela atual
+        globalMutate('http://localhost:8080/api/collection-points'); 
+        mutatePontos();
         
         setSucesso(true);
         if (onAgendamentoSucesso) onAgendamentoSucesso();
@@ -214,7 +213,6 @@ export default function FormAgendamento({ onAgendamentoSucesso }) {
                   <label className={`block text-sm font-medium mb-2 ${campoComErro === 'residuo' ? 'text-red-500 font-semibold' : 'text-gray-700'}`}>
                     Tipo de resíduo
                   </label>
-                  {/* SELECT RESÍDUO SIMPLIFICADO */}
     <select 
       value={wasteId}
       onChange={(e) => { setWasteId(e.target.value); if(campoComErro === 'residuo') setCampoComErro(''); }}

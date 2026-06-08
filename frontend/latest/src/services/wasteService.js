@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:8080/api' // Alinha com a porta em que o seu Spring Boot roda
+  baseURL: 'http://localhost:8080/api' 
 });
 
 export const wasteService = {

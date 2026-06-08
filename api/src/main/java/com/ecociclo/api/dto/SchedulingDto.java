@@ -1,23 +1,21 @@
 package com.ecociclo.api.dto;
 
 import java.time.LocalDateTime;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 public class SchedulingDto {
     private Long userId;
     private Long wasteId;
-    
-    // 1. ADICIONADO: Necessário para saber qual ponto de coleta atualizar
+
     private Long pontoColetaId; 
     
-    // 2. ADICIONADO: Necessário para calcular os pontos e descontar a capacidade
     private Integer quantidade;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime dataHora;
     private String enderecoColeta;
 
-    // Getters e Setters
     public Long getUserId() { return userId; }
     public void setUserId(Long userId) { this.userId = userId; }
 

@@ -15,7 +15,7 @@ export default function Navbar() {
   const handleLogout = () => {
     logoutGlobal();
     toast.success("Sessão encerrada.");
-    router.push("/"); // 🚀 CORRIGIDO: Agora redireciona para a página inicial pública
+    router.push("/"); 
   };
 
   return (

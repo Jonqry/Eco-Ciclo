@@ -8,14 +8,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ecociclo.api.dto.SchedulingDto;
+import com.ecociclo.api.model.CollectionPoint;
 import com.ecociclo.api.model.Scheduling;
 import com.ecociclo.api.model.StatusEnum;
 import com.ecociclo.api.model.User;
-import com.ecociclo.api.model.CollectionPoint;
+import com.ecociclo.api.repository.CollectionPointRepository;
 import com.ecociclo.api.repository.SchedulingRepository;
 import com.ecociclo.api.repository.UserRepository;
 import com.ecociclo.api.repository.WasteItemRepository;
-import com.ecociclo.api.repository.CollectionPointRepository;
 
 @Service
 public class SchedulingService {
@@ -45,12 +45,6 @@ public class SchedulingService {
         CollectionPoint ponto = collectionPointRepository.findById(dto.getPontoColetaId())
                 .orElseThrow(() -> new RuntimeException("Ponto de coleta não encontrado"));
 
-        // (Opcional) Validação da capacidade máxima do ponto
-        // if ((ponto.getVolumeAtual() == null ? 0.0 : ponto.getVolumeAtual()) + dto.getQuantidade() > ponto.getCapacidadeMax()) {
-        //    throw new RuntimeException("Ponto de coleta sem capacidade disponível.");
-        // }
-
-        // CORREÇÃO AQUI: Usando setVolumeAtual e getVolumeAtual
         ponto.setVolumeAtual((ponto.getVolumeAtual() == null ? 0.0 : ponto.getVolumeAtual()) + dto.getQuantidade().doubleValue());
         collectionPointRepository.save(ponto);
 

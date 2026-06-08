@@ -22,10 +22,8 @@ export default function RootLayout({ children }) {
 
   const rotasDeAutenticacao = ['/login', '/register'];
   
-  // Navbar e Sidebar aparecem apenas logado (ou em rotas que não sejam login/home deslogada)
   const mostraBarrasDoSistema = montado && !rotasDeAutenticacao.includes(pathname) && (pathname !== '/' || !!usuario);
-  
-  // Footer aparece em todo o site (incluindo a Home deslogada), EXCETO nas rotas de login e registro
+
   const mostraFooter = montado && !rotasDeAutenticacao.includes(pathname);
 
   return (
@@ -44,7 +42,6 @@ export default function RootLayout({ children }) {
               </main>
             </div>
 
-            {/* Alterado para usar a nova variável mostraFooter */}
             {mostraFooter && <Footer />}
 
           </AuthGuard>
