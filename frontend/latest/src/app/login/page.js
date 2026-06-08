@@ -21,7 +21,7 @@ export default function LoginPage() {
     setCarregando(true);
 
     try {
-      const response = await fetch('http://localhost:8080/usuarios/login', {
+      const response = await fetch('http://localhost:8080/api/usuarios/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, senha }),
@@ -29,16 +29,16 @@ export default function LoginPage() {
 
       if (response.ok) {
         const dadosUsuario = await response.json();
-        
+
         loginGlobal(dadosUsuario);
-        
-        router.push('/');
+
+        router.push('/profile');
       } else {
         setErro('E-mail ou senha incorretos.');
       }
     } catch (err) {
-      loginGlobal({ id: 1, nome: "João Victor", totalPontos: 1250, streak: 5 });
-      router.push('/');
+      console.error("Erro na requisição:", err);
+      setErro('Não foi possível conectar ao servidor.');
     } finally {
       setCarregando(false);
     }
@@ -47,7 +47,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-[#f5f0e8] flex items-center justify-center p-6 text-[#1a2421]">
       <div className="w-full max-w-md bg-white p-8 rounded-3xl border border-[#a8c0a0]/20 shadow-sm">
-        
+
         <div className="flex flex-col items-center mb-6">
           <div className="h-12 w-12 rounded-xl bg-[#7d9b76] text-[#f5f0e8] flex items-center justify-center mb-3">
             <Leaf className="h-6 w-6" />

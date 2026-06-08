@@ -1,18 +1,17 @@
 package com.ecociclo.api.service;
 
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.ecociclo.api.dto.SchedulingDto;
 import com.ecociclo.api.model.Scheduling;
 import com.ecociclo.api.model.StatusEnum;
 import com.ecociclo.api.model.User;
-import com.ecociclo.api.model.WasteItem;
 import com.ecociclo.api.repository.SchedulingRepository;
 import com.ecociclo.api.repository.UserRepository;
 import com.ecociclo.api.repository.WasteItemRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 public class SchedulingService {
@@ -27,10 +26,6 @@ public class SchedulingService {
     private WasteItemRepository wasteItemRepository;
 
     public Scheduling createScheduling(SchedulingDto dto) {
-        
-        if (dto.getDataHora().isBefore(LocalDateTime.now())) {
-            throw new IllegalArgumentException("A data e hora do agendamento não podem ser no passado.");
-        }
 
         Scheduling scheduling = new Scheduling();
         scheduling.setDataHora(dto.getDataHora());
@@ -39,11 +34,11 @@ public class SchedulingService {
 
         User user = userRepository.findById(dto.getUserId())
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-        WasteItem wasteItem = wasteItemRepository.findById(dto.getWasteId())
-                .orElseThrow(() -> new RuntimeException("Resíduo não encontrado"));
-
         scheduling.setUser(user);
-        scheduling.setWasteItem(wasteItem);
+
+        if (dto.getWasteId() != null) {
+            wasteItemRepository.findById(dto.getWasteId()).ifPresent(scheduling::setWasteItem);
+        }
 
         return schedulingRepository.save(scheduling);
     }

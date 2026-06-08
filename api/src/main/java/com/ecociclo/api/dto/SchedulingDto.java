@@ -2,9 +2,13 @@ package com.ecociclo.api.dto;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 public class SchedulingDto {
     private Long userId;
     private Long wasteId;
+
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime dataHora;
     private String enderecoColeta;
 

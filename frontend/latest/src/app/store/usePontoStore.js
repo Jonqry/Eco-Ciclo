@@ -8,7 +8,7 @@ export const usePontoStore = create((set) => ({
   mapZoom: 13,
   
   setSearchTerm: (term) => set({ searchTerm: term }),
-  setPontoSelecionadoId: (id) => set({ pontoSelecionadoId: id }), // <--- Corrigido aqui!
+  setPontoSelecionadoId: (id) => set({ pontoSelecionadoId: id }), 
   clearSearch: () => set({ searchTerm: '' }),
   
   toggleMapMode: () => set((state) => ({ 

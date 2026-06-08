@@ -60,7 +60,6 @@ public class CollectionPointController {
         return ResponseEntity.noContent().build();
     }
 
-    // Endpoints para busca por tipo de resíduo ou localização
     @GetMapping("/search/by-type")
     public ResponseEntity<List<CollectionPointDto>> buscarPorTipoResiduo(@RequestParam String tipoResiduo) {
         List<CollectionPointDto> pontos = service.buscarPorTipoResiduo(tipoResiduo);

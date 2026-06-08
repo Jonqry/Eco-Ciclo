@@ -8,6 +8,7 @@ import { useAuthStore } from "../../store/useAuthStore";
 
 export default function PerfilPage() {
   const usuarioLogado = useAuthStore((state) => state.user);
+  const atualizarSessaoLocal = useAuthStore((state) => state.login); 
 
   const [editando, setEditando] = useState(false);
   const [nomeForm, setNomeForm] = useState("");
@@ -29,26 +30,33 @@ export default function PerfilPage() {
 
   const handleSalvarPerfil = async (e) => {
     e.preventDefault();
-    
+
+    const usuarioAtualizado = {
+      ...usuarioLogado,
+      nome: nomeForm
+    };
+
     try {
       const response = await fetch(`http://localhost:8080/api/usuarios/${usuarioLogado.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...usuarioLogado,
-          nome: nomeForm
-        })
+        body: JSON.stringify(usuarioAtualizado)
       });
 
       if (response.ok) {
+        const dadosDoServidor = await response.json();
+
+        atualizarSessaoLocal(dadosDoServidor);
+
         toast.success("Informações cadastrais atualizadas com sucesso!");
         setEditando(false);
-        
       } else {
         toast.error("Erro ao salvar as alterações no servidor.");
       }
     } catch (err) {
-      toast.success("Perfil atualizado localmente!");
+      console.error(err);
+      atualizarSessaoLocal(usuarioAtualizado);
+      toast.success("Perfil atualizado localmente (Modo de Contingência)!");
       setEditando(false);
     }
   };

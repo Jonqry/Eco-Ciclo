@@ -23,7 +23,7 @@ export default function Footer() {
             Privacidade
           </Link>
           <a 
-            href="https://github.com" 
+            href="https://github.com/Arthurms-dev/eco-ciclo-pfe-poo-aps.git" 
             target="_blank" 
             rel="noopener noreferrer" 
             className="hover:text-[#7d9b76] hover:underline transition-colors"

@@ -3,14 +3,16 @@
 import { useState } from 'react';
 import { MapPin, Check, Calendar, Clock } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useAuthStore } from '../../store/useAuthStore'; 
 
 export default function FormAgendamento({ onAgendamentoSucesso }) {
   const router = useRouter();
-  const user = { id: 1, nome: "João Victor" };
+
+  const usuarioLogado = useAuthStore((state) => state.user);
 
   const [pontoColeta, setPontoColeta] = useState('');
-  const [wasteId, setWasteId] = useState('');
-  const [data, setData] = useState('');
+  const [wasteId, setWasteId] = useState(''); 
+  const [data, setData] = useState('');       
   const [horario, setHorario] = useState('');
   const [endereco, setEndereco] = useState('');
   const [referencia, setReferencia] = useState('');
@@ -21,61 +23,49 @@ export default function FormAgendamento({ onAgendamentoSucesso }) {
   const horariosDisponiveis = ['08:00', '09:30', '11:00', '13:30', '15:00', '16:30'];
 
   const handleAgendar = async (e) => {
-    if (e && typeof e.preventDefault === 'function') {
-      e.preventDefault();
-    }
-    
+    if (e) e.preventDefault();
     setErro('');
     setSucesso('');
 
-    if (!wasteId || !data || !horario || !endereco.trim()) {
-      return setErro('Por favor, preencha o resíduo, data, horário e endereço.');
+    const userId = usuarioLogado?.id; 
+    if (!userId) {
+      setErro("Você precisa estar logado para realizar um agendamento.");
+      return;
     }
 
-    const dataHoraCombinada = `${data}T${horario}:00`;
-    const dataSelecionada = new Date(dataHoraCombinada);
-    
-    if (dataSelecionada < new Date()) {
-      return setErro('A data e hora selecionadas já passaram.');
+    if (!pontoColeta || !wasteId || !data || !horario || !endereco) {
+      setErro("Por favor, preencha todos os campos obrigatórios.");
+      return;
     }
 
     setCarregando(true);
 
+    const dataHoraFormatada = `${data}T${horario}:00.000Z`;
+
     const payload = {
-      userId: user.id,
+      userId: Number(userId),
       wasteId: Number(wasteId),
-      dataHora: dataHoraCombinada,
-      enderecoColeta: endereco,
+      dataHora: dataHoraFormatada,
+      enderecoColeta: endereco
     };
 
     try {
-      const response = await fetch('http://localhost:8080/residuos', {
+      const response = await fetch('http://localhost:8080/api/agendamentos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
 
       if (response.ok) {
-        setSucesso('Agendamento confirmado!');
+        setSucesso("Agendamento realizado com sucesso!");
         limparCampos();
-
         if (onAgendamentoSucesso) onAgendamentoSucesso();
-
-        setTimeout(() => {
-          router.push('/residuos');
-        }, 1000);
-
       } else {
-        setErro('Erro ao realizar o agendamento. Verifique os dados.');
+        setErro("Erro ao realizar o agendamento. Verifique os dados com o servidor.");
       }
     } catch (err) {
-      console.error(err);
-      setSucesso('Agendamento simulado com sucesso (Modo Dev)!');
-      limparCampos();
-      
-      setTimeout(() => {
-        router.push('/residuos');
-      }, 1000);
+      console.error("Erro na conexão:", err);
+      setErro("Erro de conexão com o servidor. O back-end está rodando?");
     } finally {
       setCarregando(false);
     }
@@ -193,8 +183,8 @@ export default function FormAgendamento({ onAgendamentoSucesso }) {
               ></textarea>
             </div>
 
-            {erro && <p className="text-red-500 text-sm font-medium">{erro}</p>}
-            {sucesso && <p className="text-[#708769] text-sm font-medium">{sucesso}</p>}
+            {erro && <p className="text-red-500 text-sm font-medium bg-red-50 p-3 rounded-xl">{erro}</p>}
+            {sucesso && <p className="text-[#4A5D45] text-sm font-medium bg-green-50 p-3 rounded-xl">{sucesso}</p>}
 
           </form>
         </div>
@@ -218,7 +208,7 @@ export default function FormAgendamento({ onAgendamentoSucesso }) {
           </ul>
 
           <button
-            onClick={() => handleAgendar()}
+            onClick={(e) => handleAgendar(e)}
             disabled={carregando}
             className="w-full bg-[#708769] hover:bg-[#5C7056] text-white py-3.5 rounded-xl font-medium transition-colors disabled:opacity-50 cursor-pointer"
           >

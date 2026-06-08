@@ -32,6 +32,18 @@ public class UserController {
     public ResponseEntity<UserResponseDTO> criar(@Valid @RequestBody User user) {
         return ResponseEntity.status(201).body(service.cadastrar(user));
     }
+    
+    @PostMapping("/login")
+    public ResponseEntity<?> logar(@RequestBody User dadosLogin) {
+        return service.buscarPorEmail(dadosLogin.getEmail())
+            .map(usuario -> {
+                if (usuario.getSenha().equals(dadosLogin.getSenha())) {
+                    return ResponseEntity.ok(new UserResponseDTO(usuario));
+                }
+                return ResponseEntity.status(401).body("Senha incorreta.");
+            })
+            .orElse(ResponseEntity.status(404).body("Usuário não encontrado."));
+    }
 
     @GetMapping
     public ResponseEntity<List<UserResponseDTO>> listarTodos() {

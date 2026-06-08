@@ -1,6 +1,7 @@
 package com.ecociclo.api.service;
 
 import java.util.List;
+import java.util.Optional; 
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,10 @@ public class UserService {
 
         User salvo = repository.save(user);
         return new UserResponseDTO(salvo);
+    }
+
+    public Optional<User> buscarPorEmail(String email) {
+        return repository.findByEmail(email);
     }
 
     public List<UserResponseDTO> listarTodos() {
