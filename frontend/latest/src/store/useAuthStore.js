@@ -1,17 +1,9 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 
-export const useAuthStore = create(
-  persist(
-    (set) => ({
-      user: null,
-      isAuthenticated: false,
-      
-      login: (userData) => set({ user: userData, isAuthenticated: true }),
-      logout: () => set({ user: null, isAuthenticated: false }),
-    }),
-    {
-      name: 'ecociclo-auth', // Nome da chave salva no navegador
-    }
-  )
-);
+export const useAuthStore = create((set) => ({
+  user: null, 
+
+  login: (userData) => set({ user: userData }),
+
+  logout: () => set({ user: null }),
+}));
