@@ -25,7 +25,7 @@ export default function RegisterPage() {
     setErro('');
     setCarregando(true);
 
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+    const API_URL = 'https://eco-ciclo-pfe-poo-aps-backend.onrender.com';
 
     try {
         const response = await fetch(`${API_URL}/api/usuarios`, { 
