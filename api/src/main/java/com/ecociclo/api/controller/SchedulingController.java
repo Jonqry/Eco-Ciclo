@@ -6,7 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,7 +20,7 @@ import com.ecociclo.api.service.SchedulingService;
 
 @RestController
 @RequestMapping("/api/agendamentos") 
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "eco-ciclo-pfe-poo.vercel.app")
 public class SchedulingController {
 
     @Autowired
@@ -38,5 +40,14 @@ public class SchedulingController {
     public ResponseEntity<List<Scheduling>> getHistory() {
         List<Scheduling> history = schedulingService.getAllSchedulings();
         return ResponseEntity.ok(history);
+    }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteScheduling(@PathVariable Long id) {
+        try {
+            schedulingService.delete(id);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
     }
 }

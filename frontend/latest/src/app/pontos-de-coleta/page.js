@@ -12,6 +12,8 @@ const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLaye
 const Marker = dynamic(() => import('react-leaflet').then(mod => mod.Marker), { ssr: false });
 const Popup = dynamic(() => import('react-leaflet').then(mod => mod.Popup), { ssr: false });
 
+const API_URL = 'https://eco-ciclo-pfe-poo-aps-backend.onrender.com';
+
 const fetcher = (url) => fetch(url).then((res) => {
   if (!res.ok) throw new Error('Erro ao buscar dados da API');
   return res.json();
@@ -35,8 +37,8 @@ export default function PontosDeColetaPage() {
   const [map, setMap] = useState(null);
 
   const apiUrl = searchTerm
-    ? `http://localhost:8080/api/collection-points/search/by-type?tipoResiduo=${searchTerm}`
-    : 'http://localhost:8080/api/collection-points';
+    ? `${API_URL}/api/collection-points/search/by-type?tipoResiduo=${searchTerm}`
+    : `${API_URL}/api/collection-points`;
 
   const { data: pontos = [], error, isLoading } = useSWR(apiUrl, fetcher, {
     revalidateOnFocus: true,

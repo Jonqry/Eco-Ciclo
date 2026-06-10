@@ -74,4 +74,12 @@ public class SchedulingService {
     public List<Scheduling> getAllSchedulings() {
         return schedulingRepository.findAll();
     }
+
+    public void delete(Long id) {
+        if (schedulingRepository.existsById(id)) {
+            schedulingRepository.deleteById(id);
+        } else {
+            throw new RuntimeException("Agendamento não encontrado com o ID: " + id);
+        }
+    }
 }

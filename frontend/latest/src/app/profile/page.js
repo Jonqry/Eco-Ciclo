@@ -7,6 +7,8 @@ import { toast } from "sonner";
 import { useAuthStore } from "../../store/useAuthStore"; 
 import useSWR from 'swr';
 
+const API_URL = 'https://eco-ciclo-pfe-poo-aps-backend.onrender.com';
+
 const fetcher = (url) => fetch(url).then((res) => {
   if (!res.ok) throw new Error('Erro ao buscar dados');
   return res.json();
@@ -21,7 +23,7 @@ export default function PerfilPage() {
   const [cidadeForm, setCidadeForm] = useState("Recife - PE");
 
   const { data: todosAgendamentos = [], mutate } = useSWR(
-    'http://localhost:8080/api/agendamentos',
+    `${API_URL}/api/agendamentos`,
     fetcher,
     { refreshInterval: 3000 } 
   );
@@ -60,7 +62,7 @@ export default function PerfilPage() {
     const usuarioAtualizado = { ...usuarioLogado, nome: nomeCorrigido };
 
     try {
-      const response = await fetch(`http://localhost:8080/api/usuarios/${usuarioLogado.id}`, {
+      const response = await fetch(`${API_URL}/api/usuarios/${usuarioLogado.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(usuarioAtualizado)
@@ -88,6 +90,7 @@ export default function PerfilPage() {
       case '1': return "Óleo de Cozinha Usado";
       case '2': return "Baterias Velhas";
       case '3': return "Resíduos Eletrônicos";
+      case '4': return "Papel, Vidro ou Metal";
       default: return "Resíduo a classificar";
     }
   };
@@ -96,7 +99,7 @@ export default function PerfilPage() {
     if (!confirm("Deseja realmente cancelar este agendamento?")) return;
 
     try {
-      const response = await fetch(`http://localhost:8080/api/agendamentos/${idAgendamento}`, {
+      const response = await fetch(`${API_URL}/api/agendamentos/${idAgendamento}`, {
         method: 'DELETE',
         headers: {
           'Accept': 'application/json',
@@ -106,7 +109,7 @@ export default function PerfilPage() {
 
       if (response.ok || response.status === 204) {
         toast.success("Agendamento cancelado!");
-        mutate(); // Atualiza a lista
+        mutate();
       } else {
         const text = await response.text();
         console.error("Erro do servidor:", text);

@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "../store/useAuthStore";
@@ -8,13 +9,20 @@ import { Leaf, Recycle, Calendar, Award, Flame, ShieldCheck } from "lucide-react
 
 export default function HomePage() {
   const router = useRouter();
-  const usuarioLogado = useAuthStore((state) => state.user); 
+  const usuarioStore = useAuthStore((state) => state.user); 
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
+
+  const usuarioLogado = isHydrated ? usuarioStore : null;
 
   return (
     <div className="min-h-screen bg-[#f5f0e8] text-[#1a2421] font-sans flex flex-col">
 
-      {!usuarioLogado && (
-        <header className="w-full max-w-6xl mx-auto px-6 py-5 flex justify-end items-center">
+      {isHydrated && !usuarioLogado && (
+        <header className="w-full max-w-6xl mx-auto px-6 py-5 flex justify-end items-center transition-opacity animate-in fade-in">
           <button 
             onClick={() => router.push('/login')}
             className="px-5 py-2.5 rounded-xl text-xs font-bold border-2 border-[#7d9b76] text-[#7d9b76] hover:bg-[#7d9b76] hover:text-[#f5f0e8] transition-all cursor-pointer shadow-sm"
@@ -96,7 +104,7 @@ export default function HomePage() {
               </div>
               <div>
                 <h4 className="text-sm font-semibold">Ofensivas de Descarte</h4>
-                <p className="text-xs text-[#1a2421]/60">Ganhe medalhas virtuais mantendo sua rotina active semana após semana.</p>
+                <p className="text-xs text-[#1a2421]/60">Ganhe medalhas virtuais mantendo sua rotina ativa semana após semana.</p>
               </div>
             </div>
             <div className="flex gap-3 items-start">
@@ -112,21 +120,21 @@ export default function HomePage() {
         </div>
 
         <div className="bg-[#cbd6c2]/30 border border-[#a8c0a0]/30 rounded-2xl p-8 grid grid-cols-2 gap-4">
-          <div className="bg-white/80 border border-[#a8c0a0]/20 rounded-xl p-5 text-center">
+          <div className="bg-white/80 border border-[#a8c0a0]/20 rounded-xl p-5 text-center transition-all">
             <Flame className="h-8 w-8 text-orange-500 mx-auto fill-current animate-pulse" />
             <h4 className="text-xl font-bold mt-2">
               {usuarioLogado ? `${usuarioLogado.streak || 0} Dias` : '5 Dias'}
             </h4>
             <p className="text-xs text-[#1a2421]/50">Sua Ofensiva</p>
           </div>
-          <div className="bg-white/80 border border-[#a8c0a0]/20 rounded-xl p-5 text-center">
+          <div className="bg-white/80 border border-[#a8c0a0]/20 rounded-xl p-5 text-center transition-all">
             <Award className="h-8 w-8 text-[#7d9b76] mx-auto" />
             <h4 className="text-xl font-bold mt-2">
-              {usuarioLogado ? (usuarioLogado.totalPontos || 0).toLocaleString() : '1.250'}
+              {usuarioLogado ? (usuarioLogado.totalPontos || 0).toLocaleString('pt-BR') : '1.250'}
             </h4>
             <p className="text-xs text-[#1a2421]/50">Pontos ECO</p>
           </div>
-          <div className="bg-white/40 border border-[#a8c0a0]/10 rounded-xl p-4 col-span-2 text-center text-xs text-[#1a2421]/60 italic">
+          <div className="bg-white/40 border border-[#a8c0a0]/10 rounded-xl p-4 col-span-2 text-center text-xs text-[#1a2421]/60 italic transition-all">
             {usuarioLogado ? (
               `"Mais de ${usuarioLogado.totalResiduosKg || 0}kg de resíduos reciclados até agora!"`
             ) : (
@@ -136,8 +144,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {!usuarioLogado && (
-        <section className="bg-[#7d9b76] text-[#f5f0e8] py-16 px-6 text-center">
+      {isHydrated && !usuarioLogado && (
+        <section className="bg-[#7d9b76] text-[#f5f0e8] py-16 px-6 text-center animate-in slide-in-from-bottom-8 duration-700">
           <div className="max-w-2xl mx-auto">
             <h2 className="font-heading text-3xl font-bold tracking-tight">Pronto para fazer parte dessa mudança?</h2>
             <p className="mt-4 text-[#f5f0e8]/80 text-sm leading-relaxed">

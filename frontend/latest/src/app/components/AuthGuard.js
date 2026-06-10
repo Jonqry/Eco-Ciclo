@@ -11,32 +11,35 @@ export default function AuthGuard({ children }) {
 
   const [isHydrated, setIsHydrated] = useState(false);
 
+
   useEffect(() => {
     setIsHydrated(true);
   }, []);
 
+  const rotasPublicas = ['/', '/login', '/register'];
+  const ehRotaPublica = rotasPublicas.includes(pathname);
+
   useEffect(() => {
     if (!isHydrated) return;
-
-    const rotasPublicas = ['/', '/login', '/register'];
-    const ehRotaPublica = rotasPublicas.includes(pathname);
-
     if (!usuario && !ehRotaPublica) {
-  router.replace('/');
-}
+      router.replace('/login');
+    }
 
     if (usuario && (pathname === '/login' || pathname === '/register')) {
-      router.replace('/');
+      router.replace('/profile');
     }
-  }, [usuario, pathname, isHydrated, router]);
+  }, [usuario, pathname, isHydrated, router, ehRotaPublica]);
 
-  const ehRotaPublica = ['/', '/login', '/register'].includes(pathname);
-  if (!isHydrated && !ehRotaPublica) {
+  if (!isHydrated) {
     return (
       <div className="min-h-screen bg-[#f5f0e8] flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#7d9b76]"></div>
       </div>
     );
+  }
+
+  if (!usuario && !ehRotaPublica) {
+    return null; 
   }
 
   return <>{children}</>;

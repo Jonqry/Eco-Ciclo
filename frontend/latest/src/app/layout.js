@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation"; 
 import { useAuthStore } from "../store/useAuthStore";
+import { Toaster } from "sonner";
 
 import { Providers } from "./providers"; 
 import Navbar from "./components/Navbar";
@@ -21,16 +22,17 @@ export default function RootLayout({ children }) {
   }, []);
 
   const rotasDeAutenticacao = ['/login', '/register'];
-  
-  const mostraBarrasDoSistema = montado && !rotasDeAutenticacao.includes(pathname) && (pathname !== '/' || !!usuario);
-  
+  const rotasPublicas = ['/', '/termos', '/privacidade'];
+  const ehRotaPublicaSimples = rotasPublicas.includes(pathname);
+  const mostraBarrasDoSistema = montado && !rotasDeAutenticacao.includes(pathname) && (!ehRotaPublicaSimples || !!usuario);
   const mostraFooter = montado && !rotasDeAutenticacao.includes(pathname);
 
   return (
     <html lang="pt-BR">
-      <body className="min-h-screen flex flex-col bg-[#f5f0e8] antialiased text-[#1a2421]">
+      <body className={`min-h-screen flex flex-col bg-[#f5f0e8] antialiased text-[#1a2421] ${!montado ? 'opacity-0' : 'opacity-100 transition-opacity duration-300'}`}>
         <Providers>
           <AuthGuard>
+            <Toaster position="top-right" richColors />
 
             {mostraBarrasDoSistema && <Navbar />}
 
@@ -43,7 +45,6 @@ export default function RootLayout({ children }) {
             </div>
 
             {mostraFooter && <Footer />}
-
           </AuthGuard>
         </Providers>
       </body>

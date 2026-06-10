@@ -6,6 +6,8 @@ import useSWR, { mutate as globalMutate } from 'swr';
 import { MapPin, Check, Calendar, Clock, Info, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore'; 
 
+const API_URL = 'https://eco-ciclo-pfe-poo-aps-backend.onrender.com';
+
 const fetcher = (url) => fetch(url).then((res) => {
   if (!res.ok) throw new Error('Erro ao buscar dados da API');
   return res.json();
@@ -17,14 +19,15 @@ export default function FormAgendamento({ onAgendamentoSucesso }) {
   
   const atualizarSessaoLocal = useAuthStore((state) => state.setUser || state.login);
 
+  // Substituímos o localhost pela variável API_URL usando crases (template literals)
   const { data: pontos = [], error: erroPontos, isLoading: carregandoPontos, mutate: mutatePontos } = useSWR(
-    'http://localhost:8080/api/collection-points', 
+    `${API_URL}/api/collection-points`, 
     fetcher,
     { refreshInterval: 3000 } 
   );
 
   const { data: todosAgendamentos = [] } = useSWR(
-    'http://localhost:8080/api/agendamentos',
+    `${API_URL}/api/agendamentos`,
     fetcher,
     { refreshInterval: 3000 }
   );
@@ -105,7 +108,7 @@ export default function FormAgendamento({ onAgendamentoSucesso }) {
     };
 
     try {
-      const response = await fetch('http://localhost:8080/api/agendamentos', {
+      const response = await fetch(`${API_URL}/api/agendamentos`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -125,8 +128,9 @@ export default function FormAgendamento({ onAgendamentoSucesso }) {
           atualizarSessaoLocal(usuarioAtualizado); 
         }
         
-        globalMutate('http://localhost:8080/api/agendamentos');
-        globalMutate('http://localhost:8080/api/collection-points'); 
+        // Atualizando o cache do SWR com as URLs corretas da nuvem
+        globalMutate(`${API_URL}/api/agendamentos`);
+        globalMutate(`${API_URL}/api/collection-points`); 
         mutatePontos();
         
         setSucesso(true);
